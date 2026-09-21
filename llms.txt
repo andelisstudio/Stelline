@@ -40,4 +40,4 @@ Stelline (Italian for "little stars") is made by Andelis Studio, an independent 
 - Game Center leaderboards (version 1.1): optional and off by default. When turned on in Settings, the app posts the time on Today's board to the day's leaderboard for that mode (lower is better, reset daily). Everything else works without it, entirely offline.
 - Board links (version 1.1): every board has an id and a shareable link of the form https://stelline.page/b/<code>; a friend opens it with one tap when Stelline is installed, or types the code under Compete.
 - Version 1.1 also brings a redesigned Home screen and asks for confirmation before Clear or New puzzle wipes a game in progress.
-- Star Battle is a puzzle genre name. Apple, iPhone, App Store and Game Center are trademarks of Apple Inc.
+- Star Battle is a puzzle genre, created by Hans Eendebak for the 2003 World Puzzle Championship in the Netherlands. Apple, iPhone, App Store and Game Center are trademarks of Apple Inc.
