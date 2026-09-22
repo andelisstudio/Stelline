@@ -1,0 +1,17 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "studio.andelis.stelline",
+      "sha256_cert_fingerprints": [
+        "F4:EF:B9:77:FD:66:A4:34:68:34:C6:6E:64:07:FD:3C:D2:38:6A:C8:8E:D4:49:2B:DB:55:FE:9F:7F:63:60:F6",
+        "A8:C6:DC:76:7D:63:A2:EC:03:E5:98:CF:53:D7:EC:02:1C:70:EE:59:DE:C3:B9:B5:6F:12:F7:77:34:72:F9:E7",
+        "D5:78:DE:A5:C4:FF:76:16:FE:EC:6C:4C:AD:8F:01:E3:1C:23:45:56:A4:1A:AF:04:12:06:1A:E8:01:4D:37:BA",
+        "A2:0F:42:4D:6D:D5:BA:E5:BB:6B:FA:82:CA:04:B4:14:6E:42:CC:23:D7:E9:F4:58:00:FB:B3:79:03:6F:DC:BB"
+      ]
+    }
+  }
+]
