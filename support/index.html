@@ -230,7 +230,7 @@
           "url": "https://stelline.page/support/#requirements",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "An iPhone running iOS 26 or later (earlier versions of iOS cannot install the app), or a 64-bit Android phone running Android 9 or later; the Android version is in internal testing and arrives on Google Play in October 2026. Stelline is for phones only, in portrait orientation, and is not available for iPad, Mac, Apple Watch or tablets. No internet connection is ever needed and nothing is downloaded after installation. The app is in English, French, German, Spanish, Italian, Japanese and Brazilian Portuguese and follows the phone's language; this website and support are in English."
+            "text": "An iPhone running iOS 26 or later (earlier versions of iOS cannot install the app), or a 64-bit Android phone running Android 9 or later; the Android version is in review on Google Play and arrives there soon. Stelline is for phones only, in portrait orientation, and is not available for iPad, Mac, Apple Watch or tablets. No internet connection is ever needed and nothing is downloaded after installation. The app is in English, French, German, Spanish, Italian, Japanese and Brazilian Portuguese and follows the phone's language; this website and support are in English."
           }
         },
         {
@@ -290,6 +290,8 @@
           <li><a href="#appearance">Is there a colour-blind mode or a Classic theme?</a></li>
           <li><a href="#autosave">Is my game saved when I leave the app?</a></li>
           <li><a href="#daily">Is Today's board the same for everyone?</a></li>
+          <li><a href="#tactics">What is Tactics?</a></li>
+          <li><a href="#learn">What do the lessons under Learn teach?</a></li>
           <li><a href="#accessibility">Does Stelline work with VoiceOver, TalkBack and Dynamic Type?</a></li>
           <li><a href="#requirements">Which phones run Stelline?</a></li>
           <li><a href="#privacy">What does Stelline collect?</a></li>
@@ -314,7 +316,7 @@
         <li>Two stars never touch, not even diagonally.</li>
       </ul>
       <p>Every board has exactly one solution, and the game checks that before it shows you the board. On every tier except Expert in 2 stars mode there is always a next step the hint ladder can name. Most Expert 2 stars boards are explained step by step too; a few need what-if reasoning the ladder cannot explain (see <a href="#hints">Hints</a>).</p>
-      <p>The in-app tutorial (<em>How to play</em> on the Home screen) walks through the rules on real boards.</p>
+      <p><em>Learn</em> on the Home screen holds First steps, a lesson played on a real board that teaches the rules and the controls, and the six-slide summary <em>The rules at a glance</em>. (Before version 1.4 the slides were the <em>How to play</em> button.)</p>
 
       <h2 id="modes">Which modes and board sizes are there?</h2>
       <p>Two modes: <strong>1 queen</strong> on boards from 6×6 to 11×11, and <strong>2 stars</strong> on boards from 9×9 to 11×11, each graded Easy to Expert where the tier is offered. Pick the mode and the size on the Home screen; the choice applies to the next <em>New puzzle</em>.</p>
@@ -323,6 +325,7 @@
         <li><strong>2 stars:</strong> sizes 9×9 to 11×11. Difficulty Medium, Hard or Expert.</li>
       </ul>
       <p>The game remembers the size and difficulty you last used in each mode.</p>
+      <p>Besides ordinary boards there are <a href="#daily">Today's board and the archive</a> under Compete, and, on iPhone since version 1.4, <a href="#tactics">Tactics</a>, a three-minute rush of positions to read.</p>
 
       <h2 id="controls">How do the controls work?</h2>
       <p>Tap a cell to cycle it through empty, dot and queen (or star); drag across cells to dot a whole run. Undo, Redo, Clear and New puzzle sit under the board, and Hint in the toolbar.</p>
@@ -342,7 +345,7 @@
       <h2 id="marks">What do dots, X marks, queens and stars mean?</h2>
       <p>A dot (or an X, if you prefer) marks a cell where no piece can go; a queen or a star is the piece itself, and which one you see is only a drawing choice. Only the pieces count towards solving the board.</p>
       <p>A <strong>dot</strong> means “no queen or star can go here”. It is a note to yourself; the game ignores dots when deciding whether the puzzle is solved, so a stray dot never blocks a win. If you prefer the traditional look, <em>Settings → Mark</em> switches the dot to an <strong>X</strong>. The meaning is the same.</p>
-      <p>The piece you place is drawn as a <strong>crown</strong> on 1 queen boards and a <strong>star</strong> on 2 stars boards. <em>Settings → Piece</em> can force a queen or a star on every board. Again, only the drawing changes.</p>
+      <p>The piece you place is drawn as a <strong>crown</strong> on 1 queen boards and a <strong>star</strong> on 2 stars boards. <em>Settings → Piece</em> can force a queen or a star on every board, or, on iPhone since version 1.4, one of four drawn pieces: a donut, a cat, an elf or a teddy bear. Again, only the drawing changes; the rules and the labels still speak of queens and stars.</p>
 
       <h2 id="assists">What do Auto-dots and Auto-check do?</h2>
       <p>Auto-dots place dots for you where nothing can go: around every queen or star you place (on by default) and, if you turn it on, in rows, columns and regions that are already complete. Auto-check stripes in red any pieces that touch or exceed what a row, column or region may hold. All three are optional.</p>
@@ -405,6 +408,24 @@
         <li>Turn Game Center off any time in Settings: the app stops signing in and posting. Boards, marks and times stay on your phone either way. What is sent to Apple, and by whom it is processed, is described in the <a href="../privacy/#game-center">privacy policy</a>.</li>
       </ul>
 
+      <h2 id="tactics">What is Tactics?</h2>
+      <p>Tactics (iPhone, version 1.4) is a three-minute rush of positions to read. Every position is a board part-way through a solve, with the eliminations so far shown as dots. Tap the cell where a queen (or a star) can be proven right now.</p>
+      <ul>
+        <li><strong>Scoring.</strong> A right tap scores a point and moves on to the next position. Any queen of the solution that the board does not show yet counts as right, not only the one the engine had in mind.</li>
+        <li><strong>Misses.</strong> A wrong tap costs one of three lives and stops the clock. The game shows the answer, tints the cells of the idea that proves it, and names the technique with a one-line reason; tap <em>Next</em> to go on. Three misses end the run.</li>
+        <li><strong>The clock.</strong> Three minutes, counted only while a position is waiting for your answer: not while the next position is being found, not while a miss is on screen. Leaving the screen ends the run as it stands.</li>
+        <li><strong>Where the positions come from.</strong> The same deduction engine as the hints solves a freshly generated board and cuts a position out at the moment one idea proves a piece. Positions where a blind tap would be right too often are dropped. A run starts on 6×6 one-queen boards and works up to 10×10 two-star boards.</li>
+        <li><strong>Your best score</strong> stays on the phone; nothing is posted. Tactics is on the Home screen next to Learn and Compete, and uses your piece, theme and colour-blind settings.</li>
+      </ul>
+
+      <h2 id="learn">What do the lessons under Learn teach?</h2>
+      <p>Learn (version 1.4 on iPhone, version 1.0 on Android) holds lessons you play on a real board, one move at a time, with you making every move.</p>
+      <ul>
+        <li><strong>First steps</strong> teaches the rules and the controls: tap to cycle a cell, drag to dot a run, undo. It opens by itself the first time the app runs; <em>Skip</em> goes to the Home screen and the lesson waits under Learn.</li>
+        <li><strong>Two stars</strong> introduces 2-star mode on a board where two stars share each row, column and region.</li>
+        <li><strong>The rules at a glance</strong>, the six-slide summary of the rules and controls, is under Learn as well. A finished lesson shows a check next to its title; you can replay any lesson.</li>
+      </ul>
+
       <h2 id="accessibility">Does Stelline work with VoiceOver, TalkBack and Dynamic Type?</h2>
       <p>Yes. On iPhone, every cell is a VoiceOver element with actions to mark, place and clear, all controls scale with Dynamic Type, Reduce Motion turns off the animations, and haptics can be switched off. On Android, TalkBack reads every cell and the font size and remove-animations settings are respected.</p>
       <ul>
@@ -416,10 +437,10 @@
       </ul>
 
       <h2 id="requirements">Which phones run Stelline?</h2>
-      <p>Any iPhone running iOS 26 or later, and, from October 2026, any 64-bit Android phone running Android 9 or later. Stelline is for phones only, works entirely offline and comes in seven languages.</p>
+      <p>Any iPhone running iOS 26 or later, and any 64-bit Android phone running Android 9 or later. Stelline is for phones only, works entirely offline and comes in seven languages.</p>
       <ul>
         <li>iPhone running <strong>iOS 26 or later</strong>. Earlier versions of iOS cannot install the app.</li>
-        <li>Android phone running <strong>Android 9 or later</strong>, 64-bit. Stelline for Android (version 1.0) is in internal testing and arrives on Google Play in October 2026. It is the same game with the same puzzle engine, at the same price; leaderboards are on iPhone only for now.</li>
+        <li>Android phone running <strong>Android 9 or later</strong>, 64-bit. Stelline for Android (version 1.0) is in review on Google Play and arrives there soon. It is the same game with the same puzzle engine, at the same price; leaderboards are on iPhone only for now.</li>
         <li>Phones only, portrait orientation. It is not available for iPad, Mac, Apple Watch or tablets.</li>
         <li>No internet connection is needed, ever. Nothing is downloaded after installation. The Android app requests no permissions at all.</li>
         <li>English, French, German, Spanish, Italian, Japanese and Brazilian Portuguese. The app follows the phone's language; on iPhone, Settings, Apps, Stelline, Language lets you choose another, and on Android 13 or later, Settings, Apps, Stelline, Language does the same. This website and support are in English.</li>
