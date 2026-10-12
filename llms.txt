@@ -2,7 +2,7 @@
 
 > Stelline is a calm Star Battle-style logic puzzle game for iPhone (iOS 26 or later) and Android (Android 9 or later). Every board is generated on the device and verified to have exactly one solution, then graded Easy to Expert by the same seventeen-technique deduction engine that powers its hints. Paid once (USD 1.99 on both stores), no ads, no account, no data collected. Version 1.1 adds Today's board, the same board for everyone for one UTC day, with optional Game Center leaderboards (iPhone only for now) and shareable board links.
 
-Stelline (Italian for "little stars") is made by Andelis Studio, an independent one-person studio, and written from scratch in Swift, including its own generator, solver and deduction engine, which run on both platforms; the Android interface is native Kotlin and Jetpack Compose. This file follows the llms.txt convention and summarises the site at https://stelline.page for answer engines and assistants. Last updated 22 September 2026.
+Stelline (Italian for "little stars") is made by Andelis Studio, an independent one-person studio, and written from scratch in Swift, including its own generator, solver and deduction engine, which run on both platforms; the Android interface is native Kotlin and Jetpack Compose. This file follows the llms.txt convention and summarises the site at https://stelline.page for answer engines and assistants. Last updated 12 October 2026.
 
 ## Docs
 
@@ -13,8 +13,8 @@ Stelline (Italian for "little stars") is made by Andelis Studio, an independent 
 
 ## App
 
-- [Stelline on the App Store](https://apps.apple.com/app/id6808032290): USD 1.99, paid once, no in-app purchases, no subscription.
-- [Stelline on Google Play](https://play.google.com/store/apps/details?id=studio.andelis.stelline): USD 1.99, paid once, no in-app purchases, no ads.
+- [Stelline on the App Store](https://apps.apple.com/app/id6808032290): free to download since version 1.5 (Today's boards, Daily Rush, Learn, a Starter set of boards and two new boards a day are free); Stelline Unlimited (USD 1.99, one-time, Family Sharing) opens the generator without limit, and stats and history; no ads, no subscription.
+- [Stelline on Google Play](https://play.google.com/store/apps/details?id=studio.andelis.stelline): USD 1.99, paid once with everything in it, no in-app purchases, no ads.
 - Platform: iPhone (iOS 26 or later) and Android (Android 9 or later, 64-bit phones); phones only, not iPad, Mac, Apple Watch or tablets; portrait orientation. Languages: English, French, German, Spanish, Italian, Japanese and Brazilian Portuguese (the app follows the phone's language; on Android 13 or later a per-app language can be chosen in the system settings; the website and support are in English). Category: Games, Puzzle. Age rating 4+ on the App Store.
 - Board links: https://stelline.page/b/<code> opens a shared board in Stelline when the app is installed, on iPhone or on Android (Android App Links); otherwise the page shows the board's id, size, mode and region map with a link to the App Store.
 
