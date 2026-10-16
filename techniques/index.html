@@ -1,0 +1,2353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Star Battle solving techniques, explained on real boards</title>
+  <meta name="description" content="Fourteen Star Battle techniques on real boards, from last cells and line locks to X-wings, fish and the what-if step, plus the common two-star shapes.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%233b34a6' d='M16 3l3.23 8.55 9.13.43-7.13 5.72 2.41 8.82L16 21.5l-7.64 5.02 2.41-8.82-7.13-5.72 9.13-.43z'/%3E%3C/svg%3E">
+  <link rel="canonical" href="https://stelline.page/techniques/">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#faf9f6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121317">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Stelline">
+  <meta property="og:title" content="Star Battle solving techniques, explained on real boards">
+  <meta property="og:description" content="Fourteen Star Battle techniques on real boards, from last cells and line locks to X-wings, fish and the what-if step, plus the common two-star shapes.">
+  <meta property="og:url" content="https://stelline.page/techniques/">
+  <meta property="og:image" content="https://stelline.page/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Stelline app icon next to the words Stelline, Star Battle-style logic puzzles for iPhone, stelline.page.">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Star Battle solving techniques, explained on real boards">
+  <meta name="twitter:description" content="Fourteen Star Battle techniques on real boards, from last cells and line locks to X-wings, fish and the what-if step, plus the common two-star shapes.">
+  <meta name="twitter:image" content="https://stelline.page/assets/og.png">
+  <meta name="twitter:image:alt" content="The Stelline app icon next to the words Stelline, Star Battle-style logic puzzles for iPhone, stelline.page.">
+  <style>
+    /* Stelline site — one shared stylesheet, inlined in every page on purpose (no external requests, works from file://).
+       Keep this block identical in index.html, support.html and privacy.html. */
+    :root {
+      color-scheme: light dark;
+      --bg: #faf9f6;
+      --surface: #ffffff;
+      --text: #1d1c1a;
+      --muted: #5b5853;
+      --line: #e1ded7;
+      --accent: #3b34a6;
+      --accent-ink: #ffffff;
+      --tint: #eeecfb;
+      --star: #d9930f;
+      --radius: 14px;
+      --maxw: 44rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121317;
+        --surface: #1b1c22;
+        --text: #ecebe6;
+        --muted: #b3b0a8;
+        --line: #2e3039;
+        --accent: #aaa3ff;
+        --accent-ink: #14122e;
+        --tint: #24233a;
+        --star: #f2b84d;
+      }
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; scroll-padding-top: 1rem; }
+    body {
+      margin: 0;
+      font: 1rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    a { color: var(--accent); text-underline-offset: 0.15em; }
+    a:hover { text-decoration-thickness: 2px; }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+    .skip { position: absolute; left: -999px; top: 0; background: var(--surface); color: var(--text); padding: 0.5rem 1rem; z-index: 10; }
+    .skip:focus { left: 1rem; top: 1rem; }
+    .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 1.25rem; }
+    .top {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: 0.75rem 1.5rem; padding: 1rem 0; border-bottom: 1px solid var(--line);
+    }
+    .brand { display: inline-flex; align-items: center; gap: 0.6rem; font-weight: 700; font-size: 1.15rem; color: inherit; text-decoration: none; }
+    .brand svg { flex: none; }
+    .top nav { display: flex; gap: 1.25rem; font-weight: 500; }
+    .top nav a[aria-current="page"] { color: inherit; text-decoration: none; border-bottom: 2px solid var(--accent); }
+    main { padding: 2rem 0 3rem; }
+    h1, h2, h3 { line-height: 1.2; letter-spacing: -0.01em; }
+    h1 { font-size: clamp(2rem, 6vw, 3rem); margin: 0 0 0.5rem; }
+    h2 { font-size: 1.5rem; margin: 2.5rem 0 0.75rem; }
+    h3 { font-size: 1.15rem; margin: 1.5rem 0 0.5rem; }
+    p, li, dd { max-width: 68ch; }
+    .eyebrow { margin: 0 0 0.25rem; font-size: 0.9rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+    .lede { font-size: 1.2rem; color: var(--muted); margin-top: 0; }
+    .muted { color: var(--muted); }
+    .hero { padding-top: 0.5rem; }
+    .hero .icon { width: 96px; height: 96px; border-radius: 22px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12); margin-bottom: 1rem; display: block; }
+    .cta { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1.5rem 0 0.5rem; }
+    .btn {
+      display: inline-block; padding: 0.7rem 1.2rem; border-radius: 999px; font-weight: 600; text-decoration: none;
+      border: 1.5px solid var(--accent); color: var(--accent); background: transparent;
+    }
+    .btn-primary { background: var(--accent); color: var(--accent-ink); }
+    .btn:hover { text-decoration: underline; }
+    .note { font-size: 0.9rem; color: var(--muted); }
+    .form { display: block; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); margin-top: 0.75rem; }
+    .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); margin: 1rem 0; padding: 0; list-style: none; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.1rem 1.2rem; }
+    .card h3 { margin: 0 0 0.35rem; font-size: 1.05rem; }
+    .card p { margin: 0; font-size: 0.97rem; color: var(--muted); }
+    .steps { counter-reset: step; padding: 0; margin: 1rem 0; list-style: none; }
+    .steps li { position: relative; padding-left: 3rem; margin: 0 0 1rem; }
+    .steps li::before {
+      counter-increment: step; content: counter(step);
+      position: absolute; left: 0; top: 0.05rem; width: 2rem; height: 2rem; border-radius: 50%;
+      background: var(--tint); color: var(--accent); font-weight: 700; display: grid; place-items: center;
+    }
+    .shots { display: flex; gap: 1rem; overflow-x: auto; scroll-snap-type: x mandatory; padding: 0.25rem 0 0.75rem; margin: 1rem 0; }
+    .shot { flex: 0 0 min(68vw, 15rem); scroll-snap-align: start; margin: 0; }
+    .shot img {
+      display: block; width: 100%; height: auto; aspect-ratio: 1320 / 2868; object-fit: cover;
+      border-radius: 1.5rem; border: 1px solid var(--line); background: var(--tint); color: var(--muted);
+    }
+    .shot figcaption { margin-top: 0.5rem; font-size: 0.9rem; color: var(--muted); text-align: center; }
+    .notice { background: var(--tint); border-radius: var(--radius); padding: 1rem 1.2rem; margin: 1rem 0; }
+    .notice p { margin: 0.25rem 0; }
+    .toc { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem 1.2rem; margin: 1rem 0 2rem; }
+    .toc ol { margin: 0.5rem 0 0; padding-left: 1.25rem; columns: 2; column-gap: 2rem; }
+    .toc li { break-inside: avoid; margin: 0.15rem 0; }
+    @media (max-width: 30rem) { .toc ol { columns: 1; } }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 0.95rem; }
+    th, td { text-align: left; vertical-align: top; padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--line); }
+    th { font-weight: 600; }
+    .table-wrap { overflow-x: auto; }
+    dl { margin: 1rem 0; }
+    dt { font-weight: 600; margin-top: 1rem; }
+    dd { margin: 0.25rem 0 0; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.92em; background: var(--tint); padding: 0.1em 0.35em; border-radius: 4px; }
+    footer { border-top: 1px solid var(--line); padding: 1.5rem 0 2.5rem; font-size: 0.9rem; color: var(--muted); }
+    footer nav { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.5rem; }
+    footer p { margin: 0.25rem 0; }
+    @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+    @media print { .top nav, .skip, .cta, footer nav { display: none; } a { color: inherit; } }
+  </style>
+  <style>
+    /* techniques/index.html only. The block above is the shared stylesheet (identical on every page); this one draws the boards. */
+    .position { margin: 1.25rem 0; }
+    .position .board { display: block; width: min(100%, 22rem); height: auto; margin: 0 auto; border-radius: 6px; }
+    .position figcaption { margin-top: 0.6rem; font-size: 0.9rem; color: var(--muted); }
+    .hint { background: var(--tint); border-radius: var(--radius); padding: 0.8rem 1rem; font-size: 0.95rem; }
+    .legend { font-size: 0.9rem; color: var(--muted); line-height: 2; }
+    .sw { display: inline-block; width: 1em; height: 1em; vertical-align: -0.15em; margin-right: 0.3em; border-radius: 3px; }
+    .sw.focus { background: var(--accent); opacity: 0.35; }
+    .sw.dot { background: radial-gradient(circle, var(--text) 0 22%, transparent 24%); }
+    .sw.ring { border: 2px solid var(--accent); border-radius: 50%; width: 0.85em; height: 0.85em; }
+    .sw.star { background: var(--accent); clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+    h2.track { font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-top: 3rem; }
+    .toc ol ol { columns: 1; padding-left: 1rem; margin-top: 0.1rem; font-size: 0.95rem; }
+    .shapes { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); margin: 1rem 0; padding: 0; list-style: none; }
+    .shape-card { display: grid; grid-template-columns: 5.5rem 1fr; gap: 1rem; align-items: start; }
+    .shape-card .shape { width: 5.5rem; height: auto; display: block; }
+  </style>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "How to solve Star Battle puzzles: the techniques behind Stelline's hints",
+  "description": "Fourteen Star Battle techniques on real boards, from last cells and line locks to X-wings, fish and the what-if step, plus the common two-star shapes.",
+  "url": "https://stelline.page/techniques/",
+  "mainEntityOfPage": "https://stelline.page/techniques/",
+  "image": "https://stelline.page/assets/og.png",
+  "inLanguage": "en",
+  "dateModified": "2026-10-16",
+  "author": {
+    "@type": "Organization",
+    "name": "Andelis Studio LLC",
+    "url": "https://andelis.studio/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Andelis Studio LLC",
+    "url": "https://andelis.studio/"
+  },
+  "about": {
+    "@type": "Thing",
+    "name": "Star Battle logic puzzles"
+  }
+}
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="wrap">
+    <header class="top">
+      <a class="brand" href="../">
+        <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <path fill="var(--accent)" d="M16 3l3.23 8.55 9.13.43-7.13 5.72 2.41 8.82L16 21.5l-7.64 5.02 2.41-8.82-7.13-5.72 9.13-.43z"/>
+          <path fill="var(--star)" d="M27 1.5l1 2.6 2.8.2-2.15 1.75.7 2.7L27 7.25l-2.35 1.5.7-2.7L23.2 4.3l2.8-.2z"/>
+        </svg>
+        Stelline
+      </a>
+      <nav aria-label="Site">
+        <a href="../techniques/" aria-current="page">Techniques</a>
+        <a href="../support/">Support</a>
+        <a href="../privacy/">Privacy</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+        <defs><symbol id="star" viewBox="0 0 32 32"><path d="M16 3l3.23 8.55 9.13.43-7.13 5.72 2.41 8.82L16 21.5l-7.64 5.02 2.41-8.82-7.13-5.72 9.13-.43z"/></symbol></defs>
+      </svg>
+      <p class="eyebrow">Learn</p>
+      <h1>How to solve Star Battle puzzles</h1>
+      <p class="lede">The fourteen ideas Stelline's hint ladder and lessons use, each on a real board, in the order a solver tries them.</p>
+
+      <nav class="toc" aria-labelledby="toc-h">
+        <strong id="toc-h">On this page</strong>
+        <ol>
+          <li><a href="#rules">The rules in one paragraph</a></li>
+          <li><a href="#basics">Two habits before any technique</a></li>
+          <li><a href="#techniques">Techniques</a><ol>
+          <li><a href="#last-cells">Last cells</a></li>
+          <li><a href="#nosy-neighbours">Nosy neighbours</a></li>
+          <li><a href="#line-lock">Line lock</a></li>
+          <li><a href="#two-by-two">Two-by-two blocks</a></li>
+          <li><a href="#exclusion">Exclusion</a></li>
+          <li><a href="#clumps">Clumps</a></li>
+          <li><a href="#container-consumption">Container consumption</a></li>
+          <li><a href="#counting">Counting rows and regions</a></li>
+          <li><a href="#x-wing">X-wing</a></li>
+          <li><a href="#finned-count">Finned count</a></li>
+          </ol></li>
+          <li><a href="#advanced">Advanced</a><ol>
+          <li><a href="#squeeze">Squeeze</a></li>
+          <li><a href="#set-difference">Set difference</a></li>
+          <li><a href="#fish">Fish</a></li>
+          <li><a href="#what-if">What-if step</a></li>
+          </ol></li>
+          <li><a href="#shapes">Common two-star shapes</a></li>
+          <li><a href="#practice">Where to practise</a></li>
+        </ol>
+      </nav>
+
+      <h2 id="rules">The rules in one paragraph</h2>
+      <p>A Star Battle-style board is a square grid cut into as many regions as it has rows. Place one queen (or, in 2 stars mode, two stars) in every row, every column and every region, and never let two pieces touch, not even at a corner. Every Stelline board has exactly one solution, and the game checks that before showing it. The full rules and controls are on the <a href="../support/#rules">support page</a>.</p>
+      <p>Solving is a matter of ruling cells out. A <strong>dot</strong> marks a cell that cannot hold a piece; when a row, column or region is left with exactly as many free cells as pieces it still needs, those cells are the pieces. Every idea below is a way of finding dots sooner. The names are the ones the app's hint ladder uses, and each has a lesson under <em>Learn</em> in the app, played on a real board, with practice positions keyed on that one idea.</p>
+      <p class="legend"><span class="sw focus"></span> the pattern the idea reads &nbsp; <span class="sw dot"></span> a cell already ruled out &nbsp; <span class="sw ring"></span> a cell the idea rules out &nbsp; <span class="sw star"></span> the piece it proves</p>
+      <h2 id="basics">Two habits before any technique</h2>
+      <ul>
+      <li><strong>Star neighbours.</strong> The eight cells around a placed queen or star can’t hold another one.</li>
+      <li><strong>Finished row, column or region.</strong> This row, column or region already has all its queens or stars, so its other cells are out.</li>
+      </ul>
+      <p>The app can make both kinds of dots for you (<em>Auto-dots</em> in Settings, on by default), so the ideas below start where those two leave off.</p>
+      <h2 class="track" id="techniques">Techniques</h2>
+      <p>Ten ideas, in the order the hint ladder tries them: each one is tried only when the ones before it find nothing. They settle every Easy, Medium and Hard board in both modes.</p>
+      <h2 id="last-cells">Last cells</h2>
+      <p>The highlighted row, column or region has exactly as many free cells as queens it still needs, so every one of them is a queen. Place it.</p>
+      <figure class="position">
+      <svg class="board" viewBox="-0.6 -0.6 91.2 91.2" role="img" aria-label="Last cells on a 9×9 1 queen board: the pattern highlighted and the cells the deduction settles">
+<title>Last cells on a 9×9 1 queen board: the pattern highlighted and the cells the deduction settles</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="20" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="30" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="60" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="70" y="0" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="0" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="30" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="50" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="60" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="70" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="30" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="40" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="50" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="60" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="70" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="30" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="30" width="10" height="10" fill="#FF8773"/>
+<rect x="20" y="30" width="10" height="10" fill="#FF8773"/>
+<rect x="30" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="40" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="50" y="30" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="30" width="10" height="10" fill="#EBF28C"/>
+<rect x="70" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="40" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="20" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="30" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="40" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="50" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="40" width="10" height="10" fill="#E6A3C2"/>
+<rect x="70" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="50" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="50" width="10" height="10" fill="#A3D6DB"/>
+<rect x="20" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="30" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="40" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="50" y="50" width="10" height="10" fill="#E6A3C2"/>
+<rect x="60" y="50" width="10" height="10" fill="#E6A3C2"/>
+<rect x="70" y="50" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="50" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="60" width="10" height="10" fill="#A3D6DB"/>
+<rect x="10" y="60" width="10" height="10" fill="#A3D6DB"/>
+<rect x="20" y="60" width="10" height="10" fill="#A3D6DB"/>
+<rect x="30" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="40" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="50" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="60" y="60" width="10" height="10" fill="#B3DEA1"/>
+<rect x="70" y="60" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="60" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="10" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="30" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="40" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="50" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="60" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="70" y="70" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="70" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="10" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="20" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="30" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="50" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="60" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="70" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="80" y="80" width="10" height="10" fill="#B3DEA1"/>
+<path d="M0 10h10M20 0v10M30 0v10M20 10h10M40 0v10M30 10h10M60 0v10M50 10h10M60 10h10M80 0v10M70 10h10M80 10h10M10 10v10M0 20h10M10 20h10M30 10v10M50 10v10M60 10v10M80 10v10M70 20h10M80 20h10M10 20v10M0 30h10M30 20v10M40 20v10M30 30h10M50 20v10M40 30h10M60 20v10M80 20v10M70 30h10M80 30h10M0 40h10M20 30v10M10 40h10M20 40h10M40 30v10M60 30v10M50 40h10M80 30v10M70 40h10M80 40h10M0 50h10M20 40v10M30 40v10M20 50h10M30 50h10M50 40v10M40 50h10M60 50h10M80 40v10M70 50h10M80 50h10M10 60h10M30 50v10M30 60h10M40 60h10M60 50v10M50 60h10M80 50v10M70 60h10M80 60h10M10 60v10M0 70h10M20 60v10M50 70h10M70 60v10M80 60v10M70 70h10M80 70h10M0 80h10M20 70v10M30 70v10M40 70v10M50 70v10M40 80h10M60 70v10M50 80h10M60 80h10M80 70v10M80 80h10M10 80v10M20 80v10M30 80v10M50 80v10M60 80v10M70 80v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M10 0v10M10 10h10M50 0v10M40 10h10M70 0v10M20 10v10M20 20h10M40 10v10M30 20h10M40 20h10M50 20h10M70 10v10M60 20h10M20 20v10M10 30h10M20 30h10M50 30h10M70 20v10M60 30h10M10 30v10M30 30v10M30 40h10M50 30v10M40 40h10M70 30v10M60 40h10M10 40v10M10 50h10M40 40v10M60 40v10M50 50h10M70 40v10M10 50v10M0 60h10M20 50v10M20 60h10M40 50v10M50 50v10M70 50v10M60 60h10M10 70h10M30 60v10M20 70h10M40 60v10M30 70h10M50 60v10M40 70h10M60 60v10M60 70h10M10 70v10M10 80h10M20 80h10M30 80h10M70 70v10M70 80h10M40 80v10M80 80v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<rect x="0" y="0" width="90" height="90" fill="none" stroke="#1d1c1a" stroke-width="1.2" rx="0.8"/>
+<rect x="0.6" y="70.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<circle cx="75.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<use href="#star" x="71.60" y="81.60" width="6.80" height="6.80" fill="#1d1c1a"/>
+<circle cx="85.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<use href="#star" x="1.20" y="71.20" width="7.60" height="7.60" fill="var(--accent)"/>
+</svg>
+      <figcaption>9×9, 1 queen. The highlight is the pattern the idea reads; the small dots are cells already ruled out. The deduction places 1 queen: rings mark the cells it rules out, the accent star the piece it proves.</figcaption>
+      </figure>
+      <p class="hint"><strong>In the hint ladder:</strong> “Only as many cells are left here as queens or stars still needed, so they must all be filled.”</p>
+      <h2 id="nosy-neighbours">Nosy neighbours</h2>
+      <p>The highlighted region still needs two stars. A star on a cell that touches all its other free cells would leave no room for the second. Dot that cell.</p>
+      <figure class="position">
+      <svg class="board" viewBox="-0.6 -0.6 91.2 91.2" role="img" aria-label="Nosy neighbours on a 9×9 2 stars board: the pattern highlighted and the cells the deduction settles">
+<title>Nosy neighbours on a 9×9 2 stars board: the pattern highlighted and the cells the deduction settles</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="20" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="30" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="60" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="70" y="0" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="0" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="30" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="50" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="60" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="70" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="30" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="20" width="10" height="10" fill="#96BFFF"/>
+<rect x="50" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="60" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="70" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="0" y="30" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="30" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="30" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="30" width="10" height="10" fill="#96BFFF"/>
+<rect x="40" y="30" width="10" height="10" fill="#96BFFF"/>
+<rect x="50" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="60" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="70" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="80" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="0" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="10" y="40" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="40" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="40" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="50" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="60" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="70" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="10" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="20" y="50" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="40" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="50" y="50" width="10" height="10" fill="#E6A3C2"/>
+<rect x="60" y="50" width="10" height="10" fill="#E6A3C2"/>
+<rect x="70" y="50" width="10" height="10" fill="#E6A3C2"/>
+<rect x="80" y="50" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="10" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="20" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="30" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="40" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="50" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="60" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="70" y="60" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="60" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="70" width="10" height="10" fill="#FF8773"/>
+<rect x="10" y="70" width="10" height="10" fill="#FF8773"/>
+<rect x="20" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="30" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="50" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="60" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="70" y="70" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="70" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="80" width="10" height="10" fill="#FF8773"/>
+<rect x="10" y="80" width="10" height="10" fill="#FF8773"/>
+<rect x="20" y="80" width="10" height="10" fill="#FF8773"/>
+<rect x="30" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="50" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="60" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="70" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="80" y="80" width="10" height="10" fill="#A3D6DB"/>
+<path d="M0 10h10M20 0v10M30 0v10M20 10h10M40 0v10M30 10h10M60 0v10M50 10h10M80 0v10M70 10h10M80 10h10M10 10v10M0 20h10M10 20h10M30 10v10M20 20h10M30 20h10M50 10v10M40 20h10M70 10v10M60 20h10M80 10v10M70 20h10M10 20v10M0 30h10M10 30h10M30 20v10M40 30h10M60 20v10M50 30h10M70 20v10M80 30h10M10 30v10M20 30v10M10 40h10M20 40h10M40 30v10M50 40h10M70 30v10M80 30v10M0 50h10M20 40v10M20 50h10M40 40v10M30 50h10M40 50h10M60 40v10M70 40v10M80 40v10M80 50h10M10 50v10M0 60h10M10 60h10M40 50v10M30 60h10M60 50v10M50 60h10M70 50v10M60 60h10M80 60h10M10 60v10M0 70h10M20 60v10M10 70h10M50 60v10M60 60v10M50 70h10M60 70h10M80 60v10M70 70h10M80 70h10M10 70v10M0 80h10M10 80h10M30 70v10M40 70v10M30 80h10M40 80h10M60 70v10M80 70v10M10 80v10M20 80v10M40 80v10M50 80v10M60 80v10M70 80v10M80 80v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M10 0v10M10 10h10M50 0v10M40 10h10M70 0v10M60 10h10M20 10v10M40 10v10M60 10v10M50 20h10M80 20h10M20 20v10M20 30h10M40 20v10M30 30h10M50 20v10M60 30h10M80 20v10M70 30h10M0 40h10M30 30v10M30 40h10M50 30v10M40 40h10M60 30v10M60 40h10M70 40h10M80 40h10M10 40v10M10 50h10M30 40v10M50 40v10M50 50h10M60 50h10M70 50h10M20 50v10M30 50v10M20 60h10M50 50v10M40 60h10M80 50v10M70 60h10M30 60v10M20 70h10M40 60v10M30 70h10M40 70h10M70 60v10M20 70v10M20 80h10M50 70v10M50 80h10M70 70v10M60 80h10M70 80h10M80 80h10M30 80v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<rect x="0" y="0" width="90" height="90" fill="none" stroke="#1d1c1a" stroke-width="1.2" rx="0.8"/>
+<rect x="10.6" y="0.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="20.6" y="0.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="20.6" y="10.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="20.6" y="20.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<circle cx="35.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<use href="#star" x="61.60" y="31.60" width="6.80" height="6.80" fill="#1d1c1a"/>
+<circle cx="75.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<use href="#star" x="31.60" y="61.60" width="6.80" height="6.80" fill="#1d1c1a"/>
+<circle cx="45.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="15.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+</svg>
+      <figcaption>9×9, 2 stars. The highlight is the pattern the idea reads; the small dots are cells already ruled out. The deduction dots 1 cell: rings mark the cells it rules out.</figcaption>
+      </figure>
+      <p class="hint"><strong>In the hint ladder:</strong> “This cell touches every place where the unit’s queen or star could still go, so it can’t hold one itself.”</p>
+      <h2 id="line-lock">Line lock</h2>
+      <p>The highlighted region’s free cells all lie in one row or column, so its queen is that line’s queen. Dot the line’s other cells.</p>
+      <figure class="position">
+      <svg class="board" viewBox="-0.6 -0.6 91.2 91.2" role="img" aria-label="Line lock on a 9×9 1 queen board: the pattern highlighted and the cells the deduction settles">
+<title>Line lock on a 9×9 1 queen board: the pattern highlighted and the cells the deduction settles</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="70" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="80" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="30" y="10" width="10" height="10" fill="#DEDEDE"/>
+<rect x="40" y="10" width="10" height="10" fill="#DEDEDE"/>
+<rect x="50" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="70" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="80" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="30" y="20" width="10" height="10" fill="#FF8773"/>
+<rect x="40" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="50" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="60" y="20" width="10" height="10" fill="#96BFFF"/>
+<rect x="70" y="20" width="10" height="10" fill="#96BFFF"/>
+<rect x="80" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="0" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="30" y="30" width="10" height="10" fill="#FF8773"/>
+<rect x="40" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="50" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="60" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="70" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="80" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="0" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="30" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="40" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="50" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="70" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="80" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="0" y="50" width="10" height="10" fill="#E6A3C2"/>
+<rect x="10" y="50" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="50" width="10" height="10" fill="#E6A3C2"/>
+<rect x="30" y="50" width="10" height="10" fill="#E6A3C2"/>
+<rect x="40" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="50" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="70" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="80" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="0" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="10" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="30" y="60" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="60" width="10" height="10" fill="#A3D6DB"/>
+<rect x="50" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="70" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="80" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="0" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="10" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="30" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="50" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="70" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="80" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="0" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="10" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="30" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="50" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="60" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="70" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="80" y="80" width="10" height="10" fill="#A3D6DB"/>
+<path d="M10 0v10M0 10h10M20 0v10M10 10h10M40 0v10M50 0v10M60 0v10M50 10h10M60 10h10M80 0v10M70 10h10M80 10h10M10 10v10M0 20h10M20 20h10M40 10v10M40 20h10M60 10v10M80 10v10M70 20h10M20 20v10M10 30h10M20 30h10M30 30h10M50 20v10M40 30h10M50 30h10M70 20v10M80 30h10M10 30v10M0 40h10M20 30v10M10 40h10M30 40h10M50 30v10M60 30v10M70 30v10M80 30v10M80 40h10M10 40v10M10 50h10M30 40v10M40 40v10M60 40v10M50 50h10M70 40v10M60 50h10M70 50h10M0 60h10M30 50v10M20 60h10M50 50v10M60 50v10M50 60h10M70 50v10M60 60h10M80 50v10M70 60h10M80 60h10M10 60v10M0 70h10M20 60v10M10 70h10M40 60v10M30 70h10M60 60v10M50 70h10M70 60v10M80 60v10M70 70h10M80 70h10M10 70v10M0 80h10M10 80h10M30 70v10M20 80h10M30 80h10M50 70v10M60 80h10M80 70v10M10 80v10M30 80v10M40 80v10M50 80v10M60 80v10M70 80v10M80 80v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M30 0v10M20 10h10M30 10h10M40 10h10M70 0v10M20 10v10M10 20h10M30 10v10M30 20h10M50 10v10M50 20h10M70 10v10M60 20h10M80 20h10M10 20v10M0 30h10M30 20v10M40 20v10M60 20v10M60 30h10M80 20v10M70 30h10M30 30v10M20 40h10M40 30v10M40 40h10M50 40h10M60 40h10M70 40h10M0 50h10M20 40v10M20 50h10M30 50h10M50 40v10M40 50h10M80 40v10M80 50h10M10 50v10M20 50v10M10 60h10M40 50v10M30 60h10M40 60h10M30 60v10M20 70h10M50 60v10M40 70h10M60 70h10M20 70v10M40 70v10M40 80h10M60 70v10M50 80h10M70 70v10M70 80h10M80 80h10M20 80v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<rect x="0" y="0" width="90" height="90" fill="none" stroke="#1d1c1a" stroke-width="1.2" rx="0.8"/>
+<rect x="0.6" y="80.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="0.6" y="70.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<circle cx="15.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<use href="#star" x="11.60" y="51.60" width="6.80" height="6.80" fill="#1d1c1a"/>
+<circle cx="25.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="5.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+<circle cx="5.0" cy="15.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+<circle cx="5.0" cy="25.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+</svg>
+      <figcaption>9×9, 1 queen. The highlight is the pattern the idea reads; the small dots are cells already ruled out. The deduction dots 3 cells: rings mark the cells it rules out.</figcaption>
+      </figure>
+      <p class="hint"><strong>In the hint ladder:</strong> “This region fits inside one row or column and takes that line’s queen or star, so the rest of the line is out.” The reverse works too, and the hint calls it <em>Line lock (reverse)</em>: “All of this line’s remaining cells lie in one region, so that region’s other cells are out.”</p>
+      <h2 id="two-by-two">Two-by-two blocks</h2>
+      <p>The highlighted region needs two stars, and its free cells form two groups that each fit in a 2×2 block: one star per group. Dot every cell that touches a whole group.</p>
+      <figure class="position">
+      <svg class="board" viewBox="-0.6 -0.6 101.2 101.2" role="img" aria-label="Two-by-two blocks on a 10×10 2 stars board: the pattern highlighted and the cells the deduction settles">
+<title>Two-by-two blocks on a 10×10 2 stars board: the pattern highlighted and the cells the deduction settles</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="40" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="50" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="70" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="80" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="90" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="40" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="50" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="60" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="70" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="80" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="90" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="0" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="30" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="40" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="50" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="60" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="70" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="80" y="20" width="10" height="10" fill="#96BFFF"/>
+<rect x="90" y="20" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="30" width="10" height="10" fill="#FF8773"/>
+<rect x="30" y="30" width="10" height="10" fill="#FF8773"/>
+<rect x="40" y="30" width="10" height="10" fill="#BAA3E3"/>
+<rect x="50" y="30" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="30" width="10" height="10" fill="#FFC991"/>
+<rect x="70" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="80" y="30" width="10" height="10" fill="#96BFFF"/>
+<rect x="90" y="30" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="20" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="30" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="40" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="50" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="40" width="10" height="10" fill="#E6A3C2"/>
+<rect x="70" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="80" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="90" y="40" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="50" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="20" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="30" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="40" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="50" y="50" width="10" height="10" fill="#E6A3C2"/>
+<rect x="60" y="50" width="10" height="10" fill="#E6A3C2"/>
+<rect x="70" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="80" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="90" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="0" y="60" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="60" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="30" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="40" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="50" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="60" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="70" y="60" width="10" height="10" fill="#DEDEDE"/>
+<rect x="80" y="60" width="10" height="10" fill="#DEDEDE"/>
+<rect x="90" y="60" width="10" height="10" fill="#DEDEDE"/>
+<rect x="0" y="70" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="20" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="30" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="50" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="70" y="70" width="10" height="10" fill="#DEDEDE"/>
+<rect x="80" y="70" width="10" height="10" fill="#DEDEDE"/>
+<rect x="90" y="70" width="10" height="10" fill="#DEDEDE"/>
+<rect x="0" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="10" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="20" y="80" width="10" height="10" fill="#EBF28C"/>
+<rect x="30" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="50" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="60" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="70" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="80" y="80" width="10" height="10" fill="#DEDEDE"/>
+<rect x="90" y="80" width="10" height="10" fill="#DEDEDE"/>
+<rect x="0" y="90" width="10" height="10" fill="#A3D6DB"/>
+<rect x="10" y="90" width="10" height="10" fill="#A3D6DB"/>
+<rect x="20" y="90" width="10" height="10" fill="#A3D6DB"/>
+<rect x="30" y="90" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="50" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="60" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="70" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="80" y="90" width="10" height="10" fill="#DEDEDE"/>
+<rect x="90" y="90" width="10" height="10" fill="#DEDEDE"/>
+<path d="M10 0v10M0 10h10M20 0v10M10 10h10M30 0v10M20 10h10M40 0v10M30 10h10M40 10h10M60 0v10M70 0v10M60 10h10M80 0v10M70 10h10M90 0v10M90 10h10M10 10v10M0 20h10M20 10v10M30 10v10M40 10v10M50 10v10M40 20h10M50 20h10M70 10v10M60 20h10M80 20h10M20 20v10M10 30h10M30 20v10M50 20v10M40 30h10M60 30h10M70 30h10M90 20v10M80 30h10M90 30h10M10 30v10M0 40h10M30 30v10M20 40h10M30 40h10M50 40h10M70 40h10M90 30v10M90 40h10M0 50h10M20 40v10M10 50h10M30 40v10M20 50h10M50 40v10M40 50h10M60 50h10M80 40v10M70 50h10M80 50h10M0 60h10M20 50v10M40 50v10M30 60h10M40 60h10M60 50v10M50 60h10M60 60h10M80 50v10M70 60h10M90 50v10M80 60h10M90 60h10M10 60v10M0 70h10M30 60v10M20 70h10M40 60v10M40 70h10M60 60v10M60 70h10M80 60v10M70 70h10M90 60v10M80 70h10M90 70h10M10 80h10M20 80h10M30 80h10M50 70v10M80 70v10M90 70v10M80 80h10M90 80h10M10 80v10M0 90h10M10 90h10M40 80v10M30 90h10M60 80v10M50 90h10M70 80v10M60 90h10M70 90h10M90 80v10M80 90h10M90 90h10M10 90v10M20 90v10M30 90v10M50 90v10M60 90v10M70 90v10M90 90v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M50 0v10M50 10h10M80 10h10M10 20h10M20 20h10M30 20h10M60 10v10M80 10v10M70 20h10M90 10v10M90 20h10M10 20v10M0 30h10M20 30h10M40 20v10M30 30h10M60 20v10M50 30h10M70 20v10M80 20v10M20 30v10M10 40h10M40 30v10M50 30v10M40 40h10M60 30v10M70 30v10M60 40h10M80 30v10M80 40h10M10 40v10M40 40v10M30 50h10M60 40v10M50 50h10M70 40v10M90 40v10M90 50h10M10 50v10M10 60h10M30 50v10M20 60h10M50 50v10M70 50v10M20 60v10M10 70h10M30 70h10M50 60v10M50 70h10M70 60v10M10 70v10M0 80h10M20 70v10M30 70v10M40 70v10M40 80h10M60 70v10M50 80h10M70 70v10M60 80h10M70 80h10M20 80v10M30 80v10M20 90h10M50 80v10M40 90h10M80 80v10M40 90v10M80 90v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<rect x="0" y="0" width="100" height="100" fill="none" stroke="#1d1c1a" stroke-width="1.2" rx="0.8"/>
+<rect x="90.6" y="40.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="80.6" y="20.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="90.6" y="20.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<circle cx="85.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="95.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="95.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="55.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+<circle cx="95.0" cy="55.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+</svg>
+      <figcaption>10×10, 2 stars. The highlight is the pattern the idea reads; the small dots are cells already ruled out. The deduction dots 2 cells: rings mark the cells it rules out.</figcaption>
+      </figure>
+      <p class="hint"><strong>In the hint ladder:</strong> “This unit needs two stars and its cells split into two pieces that each fit a 2×2 block, so each piece holds exactly one; cells touching a whole piece are out.”</p>
+      <h2 id="exclusion">Exclusion</h2>
+      <p>One cell of the highlighted region cannot hold a queen: a queen there would leave another row, column or region without room for its own. Find it and dot it.</p>
+      <figure class="position">
+      <svg class="board" viewBox="-0.6 -0.6 91.2 91.2" role="img" aria-label="Exclusion on a 9×9 1 queen board: the pattern highlighted and the cells the deduction settles">
+<title>Exclusion on a 9×9 1 queen board: the pattern highlighted and the cells the deduction settles</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="20" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="30" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="70" y="0" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="0" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="50" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="60" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="70" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="20" y="20" width="10" height="10" fill="#FF8773"/>
+<rect x="30" y="20" width="10" height="10" fill="#FF8773"/>
+<rect x="40" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="50" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="60" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="70" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="10" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="20" y="30" width="10" height="10" fill="#FF8773"/>
+<rect x="30" y="30" width="10" height="10" fill="#FF8773"/>
+<rect x="40" y="30" width="10" height="10" fill="#FF8773"/>
+<rect x="50" y="30" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="70" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="10" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="20" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="30" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="40" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="50" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="70" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="10" y="50" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="30" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="40" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="50" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="70" y="50" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="50" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="10" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="60" width="10" height="10" fill="#A3D6DB"/>
+<rect x="30" y="60" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="50" y="60" width="10" height="10" fill="#A3D6DB"/>
+<rect x="60" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="70" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="80" y="60" width="10" height="10" fill="#A3D6DB"/>
+<rect x="0" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="10" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="30" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="50" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="60" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="70" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="80" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="0" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="10" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="30" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="50" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="60" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="70" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="80" y="80" width="10" height="10" fill="#A3D6DB"/>
+<path d="M0 10h10M20 0v10M30 0v10M40 0v10M30 10h10M50 0v10M60 10h10M80 0v10M70 10h10M80 10h10M10 10v10M0 20h10M20 10v10M50 10v10M60 10v10M80 10v10M70 20h10M80 20h10M10 30h10M30 20v10M20 30h10M30 30h10M50 20v10M60 20v10M70 20v10M60 30h10M80 20v10M70 30h10M80 30h10M10 30v10M0 40h10M10 40h10M30 30v10M20 40h10M40 30v10M30 40h10M40 40h10M50 40h10M70 30v10M60 40h10M80 30v10M70 40h10M80 40h10M10 40v10M0 50h10M30 40v10M20 50h10M40 40v10M50 50h10M70 40v10M80 40v10M70 50h10M80 50h10M10 60h10M40 50v10M50 50v10M40 60h10M60 50v10M60 60h10M80 50v10M10 60v10M0 70h10M10 70h10M30 60v10M30 70h10M50 70h10M70 60v10M80 70h10M10 70v10M0 80h10M20 70v10M10 80h10M20 80h10M40 70v10M30 80h10M50 70v10M40 80h10M60 70v10M50 80h10M70 70v10M60 80h10M80 70v10M70 80h10M80 80h10M10 80v10M20 80v10M40 80v10M50 80v10M60 80v10M70 80v10M80 80v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M10 0v10M10 10h10M20 10h10M40 10h10M60 0v10M50 10h10M70 0v10M10 20h10M30 10v10M20 20h10M40 10v10M30 20h10M40 20h10M50 20h10M70 10v10M60 20h10M10 20v10M0 30h10M20 20v10M40 20v10M40 30h10M50 30h10M20 30v10M50 30v10M60 30v10M20 40v10M10 50h10M30 50h10M50 40v10M40 50h10M60 40v10M60 50h10M10 50v10M0 60h10M20 50v10M30 50v10M20 60h10M30 60h10M50 60h10M70 50v10M70 60h10M80 60h10M20 60v10M20 70h10M40 60v10M50 60v10M40 70h10M60 60v10M60 70h10M80 60v10M70 70h10M30 70v10M30 80v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<rect x="0" y="0" width="90" height="90" fill="none" stroke="#1d1c1a" stroke-width="1.2" rx="0.8"/>
+<rect x="60.6" y="10.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="40.6" y="10.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="60.6" y="0.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="50.6" y="10.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<circle cx="55.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="15.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+</svg>
+      <figcaption>9×9, 1 queen. The highlight is the pattern the idea reads; the small dots are cells already ruled out. The deduction dots 1 cell: rings mark the cells it rules out.</figcaption>
+      </figure>
+      <p class="hint"><strong>In the hint ladder:</strong> “A queen or star here would leave a row, column or region without room for its own.”</p>
+      <h2 id="clumps">Clumps</h2>
+      <p>The highlighted region’s free cells form separate clumps, and each clump holds one star at most. With as many clumps as stars still needed, one of them has a single way to take its star. Place it.</p>
+      <figure class="position">
+      <svg class="board" viewBox="-0.6 -0.6 101.2 101.2" role="img" aria-label="Clumps on a 10×10 2 stars board: the pattern highlighted and the cells the deduction settles">
+<title>Clumps on a 10×10 2 stars board: the pattern highlighted and the cells the deduction settles</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="30" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="60" y="0" width="10" height="10" fill="#B3DEA1"/>
+<rect x="70" y="0" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="0" width="10" height="10" fill="#B3DEA1"/>
+<rect x="90" y="0" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="60" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="70" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="90" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="10" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="20" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="50" y="20" width="10" height="10" fill="#96BFFF"/>
+<rect x="60" y="20" width="10" height="10" fill="#96BFFF"/>
+<rect x="70" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="90" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="30" width="10" height="10" fill="#FFC991"/>
+<rect x="10" y="30" width="10" height="10" fill="#FFC991"/>
+<rect x="20" y="30" width="10" height="10" fill="#FFC991"/>
+<rect x="30" y="30" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="50" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="60" y="30" width="10" height="10" fill="#96BFFF"/>
+<rect x="70" y="30" width="10" height="10" fill="#96BFFF"/>
+<rect x="80" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="90" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="40" width="10" height="10" fill="#FFC991"/>
+<rect x="10" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="20" y="40" width="10" height="10" fill="#FFC991"/>
+<rect x="30" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="40" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="50" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="60" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="70" y="40" width="10" height="10" fill="#96BFFF"/>
+<rect x="80" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="90" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="0" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="10" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="20" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="30" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="40" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="50" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="60" y="50" width="10" height="10" fill="#E6A3C2"/>
+<rect x="70" y="50" width="10" height="10" fill="#A3D6DB"/>
+<rect x="80" y="50" width="10" height="10" fill="#A3D6DB"/>
+<rect x="90" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="0" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="10" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="20" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="30" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="40" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="50" y="60" width="10" height="10" fill="#DEDEDE"/>
+<rect x="60" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="70" y="60" width="10" height="10" fill="#A3D6DB"/>
+<rect x="80" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="90" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="0" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="10" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="20" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="30" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="40" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="50" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="60" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="70" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="80" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="90" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="0" y="80" width="10" height="10" fill="#EBF28C"/>
+<rect x="10" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="30" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="40" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="50" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="60" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="70" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="80" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="90" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="0" y="90" width="10" height="10" fill="#EBF28C"/>
+<rect x="10" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="20" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="30" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="40" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="50" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="60" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="70" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="80" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="90" y="90" width="10" height="10" fill="#E3CC9E"/>
+<path d="M10 0v10M0 10h10M10 10h10M30 0v10M40 0v10M30 10h10M40 10h10M50 10h10M70 0v10M60 10h10M80 0v10M70 10h10M90 0v10M80 10h10M90 10h10M10 10v10M20 10v10M20 20h10M40 10v10M30 20h10M50 20h10M70 10v10M80 10v10M70 20h10M90 10v10M80 20h10M90 20h10M10 20v10M0 30h10M10 30h10M30 30h10M40 30h10M60 20v10M60 30h10M80 20v10M90 20v10M80 30h10M90 30h10M10 30v10M0 40h10M20 30v10M30 30v10M20 40h10M50 30v10M40 40h10M50 40h10M70 30v10M70 40h10M90 30v10M10 50h10M40 40v10M30 50h10M50 40v10M40 50h10M60 40v10M50 50h10M90 40v10M90 50h10M0 60h10M20 50v10M30 50v10M40 50v10M50 50v10M50 60h10M60 60h10M80 50v10M70 60h10M90 60h10M10 60v10M0 70h10M20 60v10M10 70h10M20 70h10M40 60v10M30 70h10M40 70h10M60 70h10M70 70h10M90 60v10M10 70v10M0 80h10M20 70v10M40 70v10M30 80h10M50 70v10M60 70v10M80 70v10M70 80h10M90 70v10M0 90h10M20 80v10M30 80v10M50 80v10M40 90h10M50 90h10M70 80v10M90 80v10M80 90h10M90 90h10M20 90v10M30 90v10M40 90v10M50 90v10M60 90v10M70 90v10M80 90v10M90 90v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M20 0v10M20 10h10M50 0v10M60 0v10M0 20h10M10 20h10M30 10v10M50 10v10M40 20h10M60 10v10M60 20h10M20 20v10M30 20v10M20 30h10M40 20v10M50 20v10M50 30h10M70 20v10M70 30h10M10 40h10M40 30v10M30 40h10M60 30v10M60 40h10M80 30v10M80 40h10M90 40h10M10 40v10M0 50h10M20 40v10M30 40v10M20 50h10M70 40v10M60 50h10M80 40v10M70 50h10M80 50h10M10 50v10M10 60h10M20 60h10M30 60h10M40 60h10M60 50v10M70 50v10M90 50v10M80 60h10M30 60v10M50 60v10M60 60v10M50 70h10M70 60v10M80 60v10M80 70h10M90 70h10M10 80h10M30 70v10M20 80h10M40 80h10M50 80h10M70 70v10M60 80h10M80 80h10M90 80h10M10 80v10M10 90h10M20 90h10M40 80v10M30 90h10M60 80v10M60 90h10M80 80v10M70 90h10M10 90v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<rect x="0" y="0" width="100" height="100" fill="none" stroke="#1d1c1a" stroke-width="1.2" rx="0.8"/>
+<rect x="80.6" y="40.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="90.6" y="40.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="90.6" y="60.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<circle cx="15.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="95.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="95.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="95.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<use href="#star" x="91.20" y="61.20" width="7.60" height="7.60" fill="var(--accent)"/>
+</svg>
+      <figcaption>10×10, 2 stars. The highlight is the pattern the idea reads; the small dots are cells already ruled out. The deduction places 1 star: rings mark the cells it rules out, the accent star the piece it proves.</figcaption>
+      </figure>
+      <p class="hint"><strong>In the hint ladder:</strong> “The remaining cells form separate clumps: every way of placing the stars leaves these cells out, or fills these cells.”</p>
+      <h2 id="container-consumption">Container consumption</h2>
+      <p>All of the highlighted region’s free cells lie inside one row or column that needs one star more, so the rest of that line holds exactly one star. Dot the cells that rules out and place the star it forces.</p>
+      <figure class="position">
+      <svg class="board" viewBox="-0.6 -0.6 101.2 101.2" role="img" aria-label="Container consumption on a 10×10 2 stars board: the pattern highlighted and the cells the deduction settles">
+<title>Container consumption on a 10×10 2 stars board: the pattern highlighted and the cells the deduction settles</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="40" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="70" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="80" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="90" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="0" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="10" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="20" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="40" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="50" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="60" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="70" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="90" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="20" width="10" height="10" fill="#96BFFF"/>
+<rect x="10" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="40" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="50" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="60" y="20" width="10" height="10" fill="#FF8773"/>
+<rect x="70" y="20" width="10" height="10" fill="#FF8773"/>
+<rect x="80" y="20" width="10" height="10" fill="#FF8773"/>
+<rect x="90" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="30" width="10" height="10" fill="#96BFFF"/>
+<rect x="10" y="30" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="30" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="30" width="10" height="10" fill="#BAA3E3"/>
+<rect x="40" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="50" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="60" y="30" width="10" height="10" fill="#FF8773"/>
+<rect x="70" y="30" width="10" height="10" fill="#FF8773"/>
+<rect x="80" y="30" width="10" height="10" fill="#FF8773"/>
+<rect x="90" y="30" width="10" height="10" fill="#EBF28C"/>
+<rect x="0" y="40" width="10" height="10" fill="#96BFFF"/>
+<rect x="10" y="40" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="40" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="40" width="10" height="10" fill="#BAA3E3"/>
+<rect x="40" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="50" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="60" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="70" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="80" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="90" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="0" y="50" width="10" height="10" fill="#96BFFF"/>
+<rect x="10" y="50" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="50" width="10" height="10" fill="#E6A3C2"/>
+<rect x="30" y="50" width="10" height="10" fill="#E6A3C2"/>
+<rect x="40" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="50" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="60" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="70" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="80" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="90" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="0" y="60" width="10" height="10" fill="#96BFFF"/>
+<rect x="10" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="60" width="10" height="10" fill="#A3D6DB"/>
+<rect x="30" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="40" y="60" width="10" height="10" fill="#DEDEDE"/>
+<rect x="50" y="60" width="10" height="10" fill="#DEDEDE"/>
+<rect x="60" y="60" width="10" height="10" fill="#DEDEDE"/>
+<rect x="70" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="80" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="90" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="0" y="70" width="10" height="10" fill="#96BFFF"/>
+<rect x="10" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="20" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="30" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="70" width="10" height="10" fill="#E3CC9E"/>
+<rect x="50" y="70" width="10" height="10" fill="#E3CC9E"/>
+<rect x="60" y="70" width="10" height="10" fill="#E3CC9E"/>
+<rect x="70" y="70" width="10" height="10" fill="#FF8773"/>
+<rect x="80" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="90" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="0" y="80" width="10" height="10" fill="#96BFFF"/>
+<rect x="10" y="80" width="10" height="10" fill="#96BFFF"/>
+<rect x="20" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="30" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="50" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="60" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="70" y="80" width="10" height="10" fill="#EBF28C"/>
+<rect x="80" y="80" width="10" height="10" fill="#EBF28C"/>
+<rect x="90" y="80" width="10" height="10" fill="#EBF28C"/>
+<rect x="0" y="90" width="10" height="10" fill="#96BFFF"/>
+<rect x="10" y="90" width="10" height="10" fill="#96BFFF"/>
+<rect x="20" y="90" width="10" height="10" fill="#96BFFF"/>
+<rect x="30" y="90" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="90" width="10" height="10" fill="#A3D6DB"/>
+<rect x="50" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="60" y="90" width="10" height="10" fill="#EBF28C"/>
+<rect x="70" y="90" width="10" height="10" fill="#EBF28C"/>
+<rect x="80" y="90" width="10" height="10" fill="#EBF28C"/>
+<rect x="90" y="90" width="10" height="10" fill="#EBF28C"/>
+<path d="M10 0v10M20 0v10M30 0v10M20 10h10M30 10h10M50 0v10M60 0v10M70 0v10M80 0v10M90 0v10M10 10v10M0 20h10M30 10v10M20 20h10M30 20h10M50 10v10M60 10v10M70 10v10M80 10v10M90 10v10M90 20h10M0 30h10M20 20v10M10 30h10M30 20v10M20 30h10M40 20v10M30 30h10M50 30h10M70 20v10M60 30h10M80 20v10M70 30h10M80 30h10M0 40h10M20 30v10M30 30v10M20 40h10M30 40h10M50 30v10M40 40h10M70 30v10M60 40h10M80 30v10M70 40h10M90 40h10M0 50h10M10 50h10M30 40v10M40 50h10M60 40v10M50 50h10M70 40v10M70 50h10M90 40v10M80 50h10M90 50h10M0 60h10M20 50v10M10 60h10M30 50v10M30 60h10M40 60h10M60 60h10M70 60h10M90 50v10M80 60h10M90 60h10M0 70h10M20 70h10M50 60v10M60 60v10M70 70h10M90 60v10M80 70h10M90 70h10M0 80h10M20 70v10M30 70v10M20 80h10M30 80h10M50 70v10M40 80h10M60 70v10M50 80h10M60 80h10M90 70v10M80 80h10M90 80h10M10 80v10M0 90h10M10 90h10M30 80v10M30 90h10M50 80v10M60 80v10M50 90h10M80 80v10M70 90h10M90 80v10M80 90h10M90 90h10M10 90v10M20 90v10M40 90v10M70 90v10M80 90v10M90 90v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M0 10h10M10 10h10M40 0v10M40 10h10M50 10h10M60 10h10M70 10h10M80 10h10M90 10h10M20 10v10M10 20h10M40 10v10M40 20h10M50 20h10M60 20h10M70 20h10M80 20h10M10 20v10M50 20v10M40 30h10M60 20v10M90 20v10M90 30h10M10 30v10M10 40h10M40 30v10M60 30v10M50 40h10M90 30v10M80 40h10M10 40v10M20 40v10M20 50h10M40 40v10M30 50h10M50 40v10M60 50h10M80 40v10M10 50v10M20 60h10M40 50v10M50 50v10M60 50v10M50 60h10M70 50v10M80 50v10M10 60v10M20 60v10M10 70h10M30 60v10M40 60v10M30 70h10M40 70h10M50 70h10M70 60v10M60 70h10M80 60v10M10 70v10M10 80h10M40 70v10M70 70v10M80 70v10M70 80h10M20 80v10M20 90h10M40 80v10M40 90h10M70 80v10M60 90h10M30 90v10M50 90v10M60 90v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<rect x="0" y="0" width="100" height="100" fill="none" stroke="#1d1c1a" stroke-width="1.2" rx="0.8"/>
+<rect x="40.6" y="10.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="50.6" y="10.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="60.6" y="10.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="70.6" y="10.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="90.6" y="20.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<circle cx="5.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<use href="#star" x="21.60" y="11.60" width="6.80" height="6.80" fill="#1d1c1a"/>
+<circle cx="35.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="95.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<use href="#star" x="11.60" y="51.60" width="6.80" height="6.80" fill="#1d1c1a"/>
+<circle cx="25.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="95.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="95.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="95.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="25.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+<circle cx="85.0" cy="35.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+<circle cx="95.0" cy="35.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+<use href="#star" x="91.20" y="21.20" width="7.60" height="7.60" fill="var(--accent)"/>
+</svg>
+      <figcaption>10×10, 2 stars. The highlight is the pattern the idea reads; the small dots are cells already ruled out. The deduction dots 3 cells and places 1 star: rings mark the cells it rules out, the accent star the piece it proves.</figcaption>
+      </figure>
+      <p class="hint"><strong>In the hint ladder:</strong> “All of this line’s cells lie inside a region that needs one star more (or the reverse), so the rest of the larger unit holds exactly one star.”</p>
+      <h2 id="counting">Counting rows and regions</h2>
+      <p>Count the regions whose free cells share the same rows: as many regions as rows means those rows’ queens are theirs. The highlighted cells lie in those rows but outside those regions. Dot them.</p>
+      <figure class="position">
+      <svg class="board" viewBox="-0.6 -0.6 91.2 91.2" role="img" aria-label="Counting rows and regions on a 9×9 1 queen board: the pattern highlighted and the cells the deduction settles">
+<title>Counting rows and regions on a 9×9 1 queen board: the pattern highlighted and the cells the deduction settles</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="70" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="80" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="20" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="30" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="40" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="70" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="80" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="0" y="20" width="10" height="10" fill="#96BFFF"/>
+<rect x="10" y="20" width="10" height="10" fill="#96BFFF"/>
+<rect x="20" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="30" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="40" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="50" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="70" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="80" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="0" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="10" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="20" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="30" y="30" width="10" height="10" fill="#FF8773"/>
+<rect x="40" y="30" width="10" height="10" fill="#FF8773"/>
+<rect x="50" y="30" width="10" height="10" fill="#FF8773"/>
+<rect x="60" y="30" width="10" height="10" fill="#FFC991"/>
+<rect x="70" y="30" width="10" height="10" fill="#FFC991"/>
+<rect x="80" y="30" width="10" height="10" fill="#FFC991"/>
+<rect x="0" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="10" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="30" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="40" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="50" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="60" y="40" width="10" height="10" fill="#FFC991"/>
+<rect x="70" y="40" width="10" height="10" fill="#FFC991"/>
+<rect x="80" y="40" width="10" height="10" fill="#FFC991"/>
+<rect x="0" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="10" y="50" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="50" width="10" height="10" fill="#B3DEA1"/>
+<rect x="30" y="50" width="10" height="10" fill="#B3DEA1"/>
+<rect x="40" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="50" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="60" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="70" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="80" y="50" width="10" height="10" fill="#E6A3C2"/>
+<rect x="0" y="60" width="10" height="10" fill="#DEDEDE"/>
+<rect x="10" y="60" width="10" height="10" fill="#DEDEDE"/>
+<rect x="20" y="60" width="10" height="10" fill="#DEDEDE"/>
+<rect x="30" y="60" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="50" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="70" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="80" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="0" y="70" width="10" height="10" fill="#DEDEDE"/>
+<rect x="10" y="70" width="10" height="10" fill="#DEDEDE"/>
+<rect x="20" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="30" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="50" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="60" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="70" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="80" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="0" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="10" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="20" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="30" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="50" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="60" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="70" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="80" y="80" width="10" height="10" fill="#E6A3C2"/>
+<path d="M10 0v10M0 10h10M20 0v10M40 0v10M50 0v10M40 10h10M60 0v10M50 10h10M70 0v10M60 10h10M80 0v10M70 10h10M80 10h10M20 10v10M10 20h10M30 20h10M50 10v10M60 10v10M50 20h10M70 10v10M60 20h10M80 10v10M70 20h10M80 20h10M10 20v10M30 20v10M20 30h10M40 20v10M60 20v10M70 20v10M60 30h10M80 20v10M70 30h10M80 30h10M10 30v10M0 40h10M20 40h10M40 30v10M50 30v10M40 40h10M50 40h10M70 30v10M60 40h10M80 30v10M70 40h10M80 40h10M0 50h10M20 40v10M10 50h10M30 40v10M20 50h10M30 50h10M50 40v10M50 50h10M70 40v10M80 40v10M0 60h10M20 50v10M30 50v10M40 60h10M60 50v10M70 50v10M60 60h10M70 60h10M80 60h10M10 60v10M0 70h10M20 60v10M10 70h10M30 70h10M50 60v10M40 70h10M70 60v10M80 70h10M10 70v10M30 70v10M20 80h10M30 80h10M60 70v10M50 80h10M70 70v10M60 80h10M80 70v10M70 80h10M80 80h10M10 80v10M20 80v10M30 80v10M40 80v10M60 80v10M70 80v10M80 80v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M10 10h10M30 0v10M20 10h10M30 10h10M10 10v10M0 20h10M30 10v10M20 20h10M40 10v10M40 20h10M0 30h10M20 20v10M10 30h10M30 30h10M50 20v10M40 30h10M50 30h10M20 30v10M10 40h10M30 30v10M30 40h10M60 30v10M10 40v10M40 40v10M40 50h10M60 40v10M60 50h10M70 50h10M80 50h10M10 50v10M10 60h10M20 60h10M40 50v10M30 60h10M50 50v10M50 60h10M80 50v10M30 60v10M20 70h10M40 60v10M60 60v10M50 70h10M60 70h10M80 60v10M70 70h10M0 80h10M20 70v10M10 80h10M40 70v10M50 70v10M40 80h10M50 80v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<rect x="0" y="0" width="90" height="90" fill="none" stroke="#1d1c1a" stroke-width="1.2" rx="0.8"/>
+<rect x="10.6" y="70.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="0.6" y="70.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<circle cx="15.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<use href="#star" x="71.60" y="51.60" width="6.80" height="6.80" fill="#1d1c1a"/>
+<circle cx="85.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<use href="#star" x="51.60" y="61.60" width="6.80" height="6.80" fill="#1d1c1a"/>
+<circle cx="65.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="75.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+<circle cx="15.0" cy="75.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+</svg>
+      <figcaption>9×9, 1 queen. The highlight is the pattern the idea reads; the small dots are cells already ruled out. The deduction dots 2 cells: rings mark the cells it rules out.</figcaption>
+      </figure>
+      <p class="hint"><strong>In the hint ladder:</strong> “These regions' cells all lie in as many rows or columns as there are regions (or the reverse), so those lines' other cells are out.”</p>
+      <h2 id="x-wing">X-wing</h2>
+      <p>Two rows keep their free cells in the same two columns (or two columns in two rows), so those columns’ stars belong to those rows. Dot the columns’ cells outside those rows.</p>
+      <figure class="position">
+      <svg class="board" viewBox="-0.6 -0.6 91.2 91.2" role="img" aria-label="X-wing on a 9×9 1 queen board: the pattern highlighted and the cells the deduction settles">
+<title>X-wing on a 9×9 1 queen board: the pattern highlighted and the cells the deduction settles</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="40" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="70" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="80" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="40" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="70" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="80" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="30" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="40" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="50" y="20" width="10" height="10" fill="#96BFFF"/>
+<rect x="60" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="70" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="80" y="20" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="30" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="40" y="30" width="10" height="10" fill="#96BFFF"/>
+<rect x="50" y="30" width="10" height="10" fill="#96BFFF"/>
+<rect x="60" y="30" width="10" height="10" fill="#96BFFF"/>
+<rect x="70" y="30" width="10" height="10" fill="#FFC991"/>
+<rect x="80" y="30" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="30" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="40" y="40" width="10" height="10" fill="#96BFFF"/>
+<rect x="50" y="40" width="10" height="10" fill="#96BFFF"/>
+<rect x="60" y="40" width="10" height="10" fill="#96BFFF"/>
+<rect x="70" y="40" width="10" height="10" fill="#96BFFF"/>
+<rect x="80" y="40" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="10" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="20" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="30" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="40" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="50" y="50" width="10" height="10" fill="#96BFFF"/>
+<rect x="60" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="70" y="50" width="10" height="10" fill="#96BFFF"/>
+<rect x="80" y="50" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="10" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="20" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="30" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="40" y="60" width="10" height="10" fill="#DEDEDE"/>
+<rect x="50" y="60" width="10" height="10" fill="#DEDEDE"/>
+<rect x="60" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="70" y="60" width="10" height="10" fill="#96BFFF"/>
+<rect x="80" y="60" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="70" width="10" height="10" fill="#FF8773"/>
+<rect x="10" y="70" width="10" height="10" fill="#FF8773"/>
+<rect x="20" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="30" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="40" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="50" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="70" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="80" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="0" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="10" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="30" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="50" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="60" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="70" y="80" width="10" height="10" fill="#EBF28C"/>
+<rect x="80" y="80" width="10" height="10" fill="#EBF28C"/>
+<path d="M10 0v10M0 10h10M20 0v10M10 10h10M30 0v10M20 10h10M30 10h10M50 0v10M40 10h10M60 0v10M50 10h10M60 10h10M80 0v10M80 10h10M10 10v10M0 20h10M20 10v10M10 20h10M30 10v10M30 20h10M50 10v10M60 10v10M70 10v10M60 20h10M70 20h10M80 20h10M10 20v10M20 30h10M40 20v10M50 30h10M70 20v10M70 30h10M80 30h10M10 30v10M0 40h10M20 30v10M10 40h10M30 40h10M50 30v10M40 40h10M60 30v10M50 40h10M60 40h10M80 40h10M10 40v10M20 50h10M30 50h10M50 40v10M60 40v10M50 50h10M70 40v10M80 40v10M70 50h10M80 50h10M10 50v10M0 60h10M20 50v10M10 60h10M20 60h10M40 50v10M40 60h10M60 60h10M80 50v10M70 60h10M80 60h10M10 60v10M0 70h10M20 60v10M10 70h10M30 70h10M50 60v10M60 70h10M80 60v10M10 70v10M30 70v10M20 80h10M40 80h10M60 70v10M70 70v10M80 70v10M70 80h10M80 80h10M10 80v10M20 80v10M40 80v10M50 80v10M60 80v10M80 80v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M40 0v10M70 0v10M70 10h10M20 20h10M40 10v10M40 20h10M50 20h10M80 10v10M0 30h10M20 20v10M10 30h10M30 20v10M30 30h10M50 20v10M40 30h10M60 20v10M60 30h10M80 20v10M30 30v10M20 40h10M40 30v10M70 30v10M80 30v10M70 40h10M0 50h10M20 40v10M10 50h10M30 40v10M40 40v10M40 50h10M60 50h10M30 50v10M30 60h10M50 50v10M60 50v10M50 60h10M70 50v10M30 60v10M20 70h10M40 60v10M40 70h10M60 60v10M50 70h10M70 60v10M70 70h10M80 70h10M0 80h10M20 70v10M10 80h10M40 70v10M30 80h10M50 70v10M50 80h10M60 80h10M30 80v10M70 80v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<rect x="0" y="0" width="90" height="90" fill="none" stroke="#1d1c1a" stroke-width="1.2" rx="0.8"/>
+<rect x="20.6" y="0.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="30.6" y="0.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="20.6" y="10.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="30.6" y="10.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="20.6" y="20.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="30.6" y="20.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<circle cx="45.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<use href="#star" x="51.60" y="81.60" width="6.80" height="6.80" fill="#1d1c1a"/>
+<circle cx="65.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="5.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+<circle cx="35.0" cy="5.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+<circle cx="25.0" cy="15.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+<circle cx="35.0" cy="15.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+<circle cx="25.0" cy="25.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+<circle cx="35.0" cy="25.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+</svg>
+      <figcaption>9×9, 1 queen. The highlight is the pattern the idea reads; the small dots are cells already ruled out. The deduction dots 6 cells: rings mark the cells it rules out.</figcaption>
+      </figure>
+      <p class="hint"><strong>In the hint ladder:</strong> “Two rows keep their remaining cells in the same two columns (or the reverse), so those columns' other cells are out.”</p>
+      <h2 id="finned-count">Finned count</h2>
+      <p>Count the stars a group of rows, columns or regions still needs against the cells left for them: a star on a highlighted cell would leave that group short. Dot the highlighted cells.</p>
+      <figure class="position">
+      <svg class="board" viewBox="-0.6 -0.6 101.2 101.2" role="img" aria-label="Finned count on a 10×10 2 stars board: the pattern highlighted and the cells the deduction settles">
+<title>Finned count on a 10×10 2 stars board: the pattern highlighted and the cells the deduction settles</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="70" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="80" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="90" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="70" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="80" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="90" y="10" width="10" height="10" fill="#DEDEDE"/>
+<rect x="0" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="60" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="70" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="80" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="90" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="0" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="30" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="30" width="10" height="10" fill="#BAA3E3"/>
+<rect x="40" y="30" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="30" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="70" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="80" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="90" y="30" width="10" height="10" fill="#FF8773"/>
+<rect x="0" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="20" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="30" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="40" y="40" width="10" height="10" fill="#E6A3C2"/>
+<rect x="50" y="40" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="70" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="80" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="90" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="0" y="50" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="50" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="30" y="50" width="10" height="10" fill="#E6A3C2"/>
+<rect x="40" y="50" width="10" height="10" fill="#E6A3C2"/>
+<rect x="50" y="50" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="70" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="80" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="90" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="0" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="10" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="20" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="30" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="40" y="60" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="60" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="60" width="10" height="10" fill="#FFC991"/>
+<rect x="70" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="80" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="90" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="0" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="10" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="20" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="30" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="40" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="50" y="70" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="70" width="10" height="10" fill="#E3CC9E"/>
+<rect x="70" y="70" width="10" height="10" fill="#E3CC9E"/>
+<rect x="80" y="70" width="10" height="10" fill="#E3CC9E"/>
+<rect x="90" y="70" width="10" height="10" fill="#E3CC9E"/>
+<rect x="0" y="80" width="10" height="10" fill="#EBF28C"/>
+<rect x="10" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="20" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="30" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="50" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="60" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="70" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="80" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="90" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="0" y="90" width="10" height="10" fill="#A3D6DB"/>
+<rect x="10" y="90" width="10" height="10" fill="#A3D6DB"/>
+<rect x="20" y="90" width="10" height="10" fill="#A3D6DB"/>
+<rect x="30" y="90" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="90" width="10" height="10" fill="#A3D6DB"/>
+<rect x="50" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="60" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="70" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="80" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="90" y="90" width="10" height="10" fill="#E3CC9E"/>
+<path d="M10 0v10M0 10h10M20 0v10M20 10h10M40 0v10M30 10h10M50 0v10M40 10h10M50 10h10M70 0v10M60 10h10M80 0v10M70 10h10M90 0v10M80 10h10M10 20h10M20 20h10M40 10v10M30 20h10M50 10v10M40 20h10M70 10v10M80 10v10M90 20h10M10 20v10M0 30h10M10 30h10M20 30h10M40 20v10M40 30h10M60 20v10M70 20v10M60 30h10M80 20v10M70 30h10M90 20v10M80 30h10M10 30v10M0 40h10M30 30v10M50 30v10M50 40h10M70 30v10M60 40h10M80 30v10M80 40h10M90 40h10M0 50h10M20 40v10M30 40v10M20 50h10M40 50h10M50 50h10M60 50h10M70 50h10M90 50h10M10 50v10M20 60h10M40 50v10M30 60h10M50 60h10M80 50v10M70 60h10M90 50v10M80 60h10M90 60h10M10 60v10M0 70h10M20 60v10M10 70h10M30 70h10M50 60v10M60 60v10M50 70h10M80 60v10M90 60v10M10 70v10M0 80h10M30 70v10M40 80h10M70 70v10M60 80h10M80 70v10M70 80h10M90 70v10M80 80h10M90 80h10M20 80v10M10 90h10M30 80v10M20 90h10M40 80v10M30 90h10M40 90h10M60 80v10M50 90h10M70 80v10M60 90h10M80 80v10M70 90h10M90 80v10M80 90h10M90 90h10M10 90v10M20 90v10M30 90v10M40 90v10M60 90v10M70 90v10M80 90v10M90 90v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M10 10h10M30 0v10M60 0v10M90 10h10M10 10v10M0 20h10M20 10v10M30 10v10M60 10v10M50 20h10M60 20h10M70 20h10M90 10v10M80 20h10M20 20v10M30 20v10M30 30h10M50 20v10M50 30h10M90 30h10M20 30v10M10 40h10M20 40h10M40 30v10M30 40h10M40 40h10M60 30v10M70 40h10M90 30v10M10 40v10M10 50h10M40 40v10M30 50h10M50 40v10M60 40v10M70 40v10M80 40v10M90 40v10M80 50h10M0 60h10M20 50v10M10 60h10M30 50v10M50 50v10M40 60h10M60 50v10M70 50v10M60 60h10M30 60v10M20 70h10M40 60v10M40 70h10M70 60v10M60 70h10M70 70h10M80 70h10M90 70h10M20 70v10M10 80h10M20 80h10M40 70v10M30 80h10M50 70v10M60 70v10M50 80h10M10 80v10M0 90h10M50 80v10M50 90v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<rect x="0" y="0" width="100" height="100" fill="none" stroke="#1d1c1a" stroke-width="1.2" rx="0.8"/>
+<rect x="60.6" y="10.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="60.6" y="0.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<circle cx="35.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="95.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<use href="#star" x="31.60" y="31.60" width="6.80" height="6.80" fill="#1d1c1a"/>
+<circle cx="45.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="5.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+<circle cx="65.0" cy="15.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+</svg>
+      <figcaption>10×10, 2 stars. The highlight is the pattern the idea reads; the small dots are cells already ruled out. The deduction dots 2 cells: rings mark the cells it rules out.</figcaption>
+      </figure>
+      <p class="hint"><strong>In the hint ladder:</strong> “Count the queens or stars a group of rows, columns or regions still needs against the cells left for them: one placed here would leave that group short, so this cell is out.”</p>
+      <h2 class="track" id="advanced">Advanced</h2>
+      <p>Three counting ideas that look at several rows, columns or regions at once, then the last resort. Expert boards need at least one of them.</p>
+      <h2 id="squeeze">Squeeze</h2>
+      <p>Take the highlighted line together with its neighbour: their free cells split into 2×2 pieces, exactly as many as the stars the two lines still need, so each piece holds one star. Dot the cells a piece’s star would always touch, and place the star of a piece with one cell left.</p>
+      <figure class="position">
+      <svg class="board" viewBox="-0.6 -0.6 101.2 101.2" role="img" aria-label="Squeeze on a 10×10 2 stars board: the pattern highlighted and the cells the deduction settles">
+<title>Squeeze on a 10×10 2 stars board: the pattern highlighted and the cells the deduction settles</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="40" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="50" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="70" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="80" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="90" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="30" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="40" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="70" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="80" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="90" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="30" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="60" y="20" width="10" height="10" fill="#96BFFF"/>
+<rect x="70" y="20" width="10" height="10" fill="#96BFFF"/>
+<rect x="80" y="20" width="10" height="10" fill="#96BFFF"/>
+<rect x="90" y="20" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="30" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="40" y="30" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="60" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="70" y="30" width="10" height="10" fill="#96BFFF"/>
+<rect x="80" y="30" width="10" height="10" fill="#96BFFF"/>
+<rect x="90" y="30" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="40" width="10" height="10" fill="#FFC991"/>
+<rect x="10" y="40" width="10" height="10" fill="#FFC991"/>
+<rect x="20" y="40" width="10" height="10" fill="#FFC991"/>
+<rect x="30" y="40" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="40" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="60" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="70" y="40" width="10" height="10" fill="#96BFFF"/>
+<rect x="80" y="40" width="10" height="10" fill="#96BFFF"/>
+<rect x="90" y="40" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="50" width="10" height="10" fill="#FFC991"/>
+<rect x="10" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="20" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="30" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="40" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="50" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="60" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="70" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="80" y="50" width="10" height="10" fill="#96BFFF"/>
+<rect x="90" y="50" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="10" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="20" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="30" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="40" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="50" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="70" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="80" y="60" width="10" height="10" fill="#96BFFF"/>
+<rect x="90" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="0" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="10" y="70" width="10" height="10" fill="#FF8773"/>
+<rect x="20" y="70" width="10" height="10" fill="#FF8773"/>
+<rect x="30" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="50" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="70" width="10" height="10" fill="#EBF28C"/>
+<rect x="70" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="80" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="90" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="0" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="10" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="20" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="30" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="50" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="60" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="70" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="80" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="90" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="0" y="90" width="10" height="10" fill="#A3D6DB"/>
+<rect x="10" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="20" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="30" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="40" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="50" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="60" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="70" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="80" y="90" width="10" height="10" fill="#E6A3C2"/>
+<rect x="90" y="90" width="10" height="10" fill="#E6A3C2"/>
+<path d="M10 0v10M0 10h10M20 0v10M10 10h10M30 0v10M40 0v10M30 10h10M60 0v10M50 10h10M80 0v10M70 10h10M90 0v10M80 10h10M90 10h10M10 10v10M10 20h10M20 20h10M50 10v10M40 20h10M70 10v10M60 20h10M80 10v10M70 20h10M90 10v10M80 20h10M90 20h10M0 30h10M20 30h10M40 20v10M40 30h10M50 30h10M70 20v10M80 20v10M70 30h10M90 20v10M80 30h10M90 30h10M10 30v10M20 30v10M30 30v10M40 40h10M60 30v10M50 40h10M60 40h10M80 30v10M70 40h10M90 30v10M80 40h10M90 40h10M10 40v10M0 50h10M20 40v10M30 40v10M40 40v10M60 40v10M50 50h10M60 50h10M80 40v10M90 40v10M80 50h10M90 50h10M20 50v10M10 60h10M30 50v10M20 60h10M30 60h10M50 50v10M60 50v10M70 60h10M90 50v10M80 60h10M10 60v10M20 60v10M10 70h10M30 60v10M20 70h10M40 60v10M60 60v10M50 70h10M70 60v10M60 70h10M90 70h10M0 80h10M20 70v10M40 70v10M30 80h10M60 70v10M80 70v10M70 80h10M90 70v10M80 80h10M90 80h10M10 80v10M0 90h10M20 80v10M30 80v10M50 80v10M40 90h10M60 80v10M50 90h10M60 90h10M80 80v10M90 80v10M80 90h10M90 90h10M20 90v10M30 90v10M40 90v10M50 90v10M60 90v10M70 90v10M90 90v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M20 10h10M50 0v10M40 10h10M70 0v10M60 10h10M0 20h10M20 10v10M30 10v10M40 10v10M30 20h10M60 10v10M50 20h10M10 20v10M20 20v10M10 30h10M30 20v10M30 30h10M50 20v10M60 20v10M60 30h10M0 40h10M10 40h10M20 40h10M40 30v10M30 40h10M50 30v10M70 30v10M10 50h10M20 50h10M30 50h10M50 40v10M40 50h10M70 40v10M70 50h10M10 50v10M0 60h10M40 50v10M40 60h10M50 60h10M70 50v10M60 60h10M80 50v10M90 60h10M0 70h10M30 70h10M50 60v10M40 70h10M80 60v10M70 70h10M90 60v10M80 70h10M10 70v10M10 80h10M30 70v10M20 80h10M50 70v10M40 80h10M50 80h10M70 70v10M60 80h10M10 90h10M20 90h10M40 80v10M30 90h10M70 80v10M70 90h10M10 90v10M80 90v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<rect x="0" y="0" width="100" height="100" fill="none" stroke="#1d1c1a" stroke-width="1.2" rx="0.8"/>
+<rect x="60.6" y="40.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="60.6" y="70.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="60.6" y="0.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<circle cx="75.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<use href="#star" x="51.60" y="21.60" width="6.80" height="6.80" fill="#1d1c1a"/>
+<circle cx="65.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="95.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="95.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<use href="#star" x="71.60" y="91.60" width="6.80" height="6.80" fill="#1d1c1a"/>
+<circle cx="85.0" cy="95.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="5.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+<use href="#star" x="61.20" y="1.20" width="7.60" height="7.60" fill="var(--accent)"/>
+</svg>
+      <figcaption>10×10, 2 stars. The highlight is the pattern the idea reads; the small dots are cells already ruled out. The deduction dots 1 cell and places 1 star: rings mark the cells it rules out, the accent star the piece it proves.</figcaption>
+      </figure>
+      <p class="hint"><strong>In the hint ladder:</strong> “Take two neighbouring rows or columns together and split their free cells into 2×2 pieces: there are exactly as many pieces as stars to place, so each piece holds exactly one.”</p>
+      <h2 id="set-difference">Set difference</h2>
+      <p>Some rows, columns or regions keep all their free cells inside other units that need one star more. Take the first ones out: the cells left over, highlighted here, hold exactly one star. Dot the cells it would touch whichever of them it takes, and place it where one cell is left.</p>
+      <figure class="position">
+      <svg class="board" viewBox="-0.6 -0.6 101.2 101.2" role="img" aria-label="Set difference on a 10×10 2 stars board: the pattern highlighted and the cells the deduction settles">
+<title>Set difference on a 10×10 2 stars board: the pattern highlighted and the cells the deduction settles</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="40" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="70" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="80" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="90" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="40" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="50" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="70" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="80" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="90" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="30" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="40" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="20" width="10" height="10" fill="#FF8773"/>
+<rect x="70" y="20" width="10" height="10" fill="#EBF28C"/>
+<rect x="80" y="20" width="10" height="10" fill="#EBF28C"/>
+<rect x="90" y="20" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="30" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="40" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="50" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="60" y="30" width="10" height="10" fill="#FF8773"/>
+<rect x="70" y="30" width="10" height="10" fill="#FF8773"/>
+<rect x="80" y="30" width="10" height="10" fill="#EBF28C"/>
+<rect x="90" y="30" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="40" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="30" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="40" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="50" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="60" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="70" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="80" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="90" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="0" y="50" width="10" height="10" fill="#E6A3C2"/>
+<rect x="10" y="50" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="50" width="10" height="10" fill="#A3D6DB"/>
+<rect x="30" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="40" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="50" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="60" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="70" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="80" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="90" y="50" width="10" height="10" fill="#E3CC9E"/>
+<rect x="0" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="10" y="60" width="10" height="10" fill="#A3D6DB"/>
+<rect x="20" y="60" width="10" height="10" fill="#A3D6DB"/>
+<rect x="30" y="60" width="10" height="10" fill="#DEDEDE"/>
+<rect x="40" y="60" width="10" height="10" fill="#DEDEDE"/>
+<rect x="50" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="60" y="60" width="10" height="10" fill="#E3CC9E"/>
+<rect x="70" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="80" y="60" width="10" height="10" fill="#E3CC9E"/>
+<rect x="90" y="60" width="10" height="10" fill="#E3CC9E"/>
+<rect x="0" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="10" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="20" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="30" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="50" y="70" width="10" height="10" fill="#FF8773"/>
+<rect x="60" y="70" width="10" height="10" fill="#E3CC9E"/>
+<rect x="70" y="70" width="10" height="10" fill="#E3CC9E"/>
+<rect x="80" y="70" width="10" height="10" fill="#E3CC9E"/>
+<rect x="90" y="70" width="10" height="10" fill="#E3CC9E"/>
+<rect x="0" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="10" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="30" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="40" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="50" y="80" width="10" height="10" fill="#FF8773"/>
+<rect x="60" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="70" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="80" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="90" y="80" width="10" height="10" fill="#E3CC9E"/>
+<rect x="0" y="90" width="10" height="10" fill="#E6A3C2"/>
+<rect x="10" y="90" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="90" width="10" height="10" fill="#E6A3C2"/>
+<rect x="30" y="90" width="10" height="10" fill="#E6A3C2"/>
+<rect x="40" y="90" width="10" height="10" fill="#FF8773"/>
+<rect x="50" y="90" width="10" height="10" fill="#FF8773"/>
+<rect x="60" y="90" width="10" height="10" fill="#FF8773"/>
+<rect x="70" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="80" y="90" width="10" height="10" fill="#E3CC9E"/>
+<rect x="90" y="90" width="10" height="10" fill="#E3CC9E"/>
+<path d="M10 0v10M0 10h10M20 0v10M10 10h10M30 0v10M20 10h10M30 10h10M50 0v10M60 0v10M50 10h10M70 0v10M60 10h10M70 10h10M90 0v10M90 10h10M10 10v10M20 10v10M30 10v10M40 10v10M60 10v10M50 20h10M70 10v10M80 10v10M90 20h10M10 20v10M0 30h10M10 30h10M30 20v10M20 30h10M30 30h10M50 20v10M60 30h10M80 20v10M80 30h10M90 30h10M10 30v10M0 40h10M30 30v10M20 40h10M40 30v10M30 40h10M50 30v10M40 40h10M70 30v10M60 40h10M70 40h10M80 40h10M10 50h10M30 40v10M40 40v10M30 50h10M60 40v10M50 50h10M70 40v10M90 40v10M80 50h10M10 50v10M0 60h10M20 60h10M30 60h10M50 50v10M50 60h10M70 50v10M80 50v10M70 60h10M90 60h10M0 70h10M20 60v10M10 70h10M20 70h10M40 60v10M50 70h10M60 70h10M90 60v10M80 70h10M90 70h10M0 80h10M20 70v10M30 70v10M20 80h10M40 70v10M50 80h10M70 70v10M60 80h10M80 70v10M70 80h10M90 70v10M80 80h10M90 80h10M10 80v10M0 90h10M10 90h10M40 80v10M30 90h10M50 90h10M70 80v10M80 80v10M70 90h10M90 80v10M80 90h10M90 90h10M10 90v10M20 90v10M30 90v10M50 90v10M60 90v10M80 90v10M90 90v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M40 0v10M40 10h10M80 0v10M80 10h10M0 20h10M10 20h10M20 20h10M30 20h10M50 10v10M40 20h10M60 20h10M70 20h10M90 10v10M80 20h10M20 20v10M40 20v10M40 30h10M60 20v10M50 30h10M70 20v10M70 30h10M90 20v10M20 30v10M10 40h10M60 30v10M50 40h10M80 30v10M90 30v10M90 40h10M10 40v10M0 50h10M20 40v10M20 50h10M50 40v10M40 50h10M60 50h10M80 40v10M70 50h10M90 50h10M20 50v10M10 60h10M30 50v10M40 50v10M40 60h10M60 50v10M60 60h10M90 50v10M80 60h10M10 60v10M30 60v10M30 70h10M50 60v10M40 70h10M60 60v10M70 60v10M80 60v10M70 70h10M10 70v10M10 80h10M30 80h10M50 70v10M40 80h10M60 70v10M20 80v10M30 80v10M20 90h10M50 80v10M40 90h10M60 80v10M60 90h10M40 90v10M70 90v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<rect x="0" y="0" width="100" height="100" fill="none" stroke="#1d1c1a" stroke-width="1.2" rx="0.8"/>
+<rect x="50.6" y="20.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="60.6" y="20.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="60.6" y="30.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<circle cx="45.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<use href="#star" x="1.60" y="41.60" width="6.80" height="6.80" fill="#1d1c1a"/>
+<circle cx="15.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="95.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="95.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="95.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="95.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="95.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="95.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="95.0" cy="95.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="25.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+<circle cx="65.0" cy="35.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+<use href="#star" x="51.20" y="21.20" width="7.60" height="7.60" fill="var(--accent)"/>
+</svg>
+      <figcaption>10×10, 2 stars. The highlight is the pattern the idea reads; the small dots are cells already ruled out. The deduction dots 2 cells and places 1 star: rings mark the cells it rules out, the accent star the piece it proves.</figcaption>
+      </figure>
+      <p class="hint"><strong>In the hint ladder:</strong> “These units' cells all lie inside other units that need one star more, so the cells left over hold exactly one star.”</p>
+      <h2 id="fish">Fish</h2>
+      <p>Three or more rows keep their free cells within as many columns (or columns within rows), so those columns’ queens belong to those rows. Dot the columns’ cells outside those rows.</p>
+      <figure class="position">
+      <svg class="board" viewBox="-0.6 -0.6 81.2 81.2" role="img" aria-label="Fish on a 8×8 1 queen board: the pattern highlighted and the cells the deduction settles">
+<title>Fish on a 8×8 1 queen board: the pattern highlighted and the cells the deduction settles</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="20" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="30" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="60" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="70" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="30" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="70" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="30" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="40" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="70" y="20" width="10" height="10" fill="#DEDEDE"/>
+<rect x="0" y="30" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="30" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="40" y="30" width="10" height="10" fill="#FF8773"/>
+<rect x="50" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="60" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="70" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="0" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="30" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="40" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="50" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="70" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="0" y="50" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="50" width="10" height="10" fill="#B3DEA1"/>
+<rect x="20" y="50" width="10" height="10" fill="#B3DEA1"/>
+<rect x="30" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="40" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="50" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="70" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="0" y="60" width="10" height="10" fill="#B3DEA1"/>
+<rect x="10" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="60" width="10" height="10" fill="#B3DEA1"/>
+<rect x="30" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="40" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="50" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="60" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="70" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="0" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="10" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="30" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="40" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="50" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="60" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="70" y="70" width="10" height="10" fill="#E6A3C2"/>
+<path d="M0 10h10M20 0v10M30 0v10M20 10h10M40 0v10M30 10h10M40 10h10M60 0v10M70 0v10M60 10h10M70 10h10M10 10v10M0 20h10M30 10v10M20 20h10M40 10v10M50 10v10M40 20h10M50 20h10M70 10v10M0 30h10M10 30h10M30 30h10M50 20v10M70 20v10M60 30h10M70 30h10M20 30v10M10 40h10M30 30v10M20 40h10M30 40h10M40 40h10M60 30v10M70 30v10M10 40v10M0 50h10M20 40v10M10 50h10M30 40v10M20 50h10M40 50h10M60 40v10M50 50h10M70 40v10M60 50h10M70 50h10M10 50v10M0 60h10M20 50v10M20 60h10M40 50v10M60 50v10M70 50v10M10 70h10M40 60v10M30 70h10M50 60v10M40 70h10M60 60v10M50 70h10M70 60v10M60 70h10M70 70h10M10 70v10M20 70v10M30 70v10M40 70v10M50 70v10M60 70v10M70 70v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M10 0v10M10 10h10M50 0v10M50 10h10M20 10v10M10 20h10M30 20h10M60 10v10M60 20h10M70 20h10M10 20v10M20 20v10M30 20v10M20 30h10M40 20v10M40 30h10M60 20v10M50 30h10M10 30v10M0 40h10M40 30v10M50 30v10M50 40h10M60 40h10M70 40h10M40 40v10M30 50h10M50 40v10M10 60h10M30 50v10M30 60h10M50 50v10M40 60h10M50 60h10M60 60h10M70 60h10M10 60v10M0 70h10M20 60v10M30 60v10M20 70h10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<rect x="0" y="0" width="80" height="80" fill="none" stroke="#1d1c1a" stroke-width="1.2" rx="0.8"/>
+<rect x="40.6" y="0.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="40.6" y="40.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="40.6" y="50.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<circle cx="5.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="5.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="5.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+<circle cx="45.0" cy="45.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+<circle cx="45.0" cy="55.0" r="2" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+</svg>
+      <figcaption>8×8, 1 queen. The highlight is the pattern the idea reads; the small dots are cells already ruled out. The deduction dots 3 cells: rings mark the cells it rules out.</figcaption>
+      </figure>
+      <p class="hint"><strong>In the hint ladder:</strong> “Find rows whose remaining cells all sit in just as many columns (or columns in rows): those columns' queens or stars must land in these rows, so the columns' other cells are out.”</p>
+      <h2 id="what-if">What-if step</h2>
+      <p>The what-if step is the last resort: suppose a cell, follow the forced moves, and a contradiction rules it out. In the app, the what-if lesson has you place the supposed star, follow the stars it forces until a row, column or region is starved or two stars touch, then dot the cell on a fresh copy of the board. The <em>What-if marks</em> setting (version 1.6) gives you the same tool on any board: the marks of a branch are drawn hollow, <em>Keep</em> makes them firm, <em>Drop</em> removes them in one step.</p>
+      <figure class="position">
+      <svg class="board" viewBox="-0.6 -0.6 91.2 91.2" role="img" aria-label="The what-if step on a 9×9 2 stars board: a supposed star, the star it forces, and the unit that is left without room">
+<title>The what-if step on a 9×9 2 stars board: a supposed star, the star it forces, and the unit that is left without room</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="30" y="0" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="50" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="60" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="70" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="80" y="0" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="30" y="10" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="50" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="60" y="10" width="10" height="10" fill="#B3DEA1"/>
+<rect x="70" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="80" y="10" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="20" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="30" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="50" y="20" width="10" height="10" fill="#FFC991"/>
+<rect x="60" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="70" y="20" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="20" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="10" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="20" y="30" width="10" height="10" fill="#DEDEDE"/>
+<rect x="30" y="30" width="10" height="10" fill="#FFC991"/>
+<rect x="40" y="30" width="10" height="10" fill="#FF8773"/>
+<rect x="50" y="30" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="30" width="10" height="10" fill="#EBF28C"/>
+<rect x="70" y="30" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="30" width="10" height="10" fill="#96BFFF"/>
+<rect x="0" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="10" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="20" y="40" width="10" height="10" fill="#DEDEDE"/>
+<rect x="30" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="40" y="40" width="10" height="10" fill="#FF8773"/>
+<rect x="50" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="40" width="10" height="10" fill="#EBF28C"/>
+<rect x="70" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="40" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="10" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="20" y="50" width="10" height="10" fill="#DEDEDE"/>
+<rect x="30" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="40" y="50" width="10" height="10" fill="#FF8773"/>
+<rect x="50" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="60" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="70" y="50" width="10" height="10" fill="#EBF28C"/>
+<rect x="80" y="50" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="60" width="10" height="10" fill="#DEDEDE"/>
+<rect x="10" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="60" width="10" height="10" fill="#E6A3C2"/>
+<rect x="30" y="60" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="50" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="60" y="60" width="10" height="10" fill="#FF8773"/>
+<rect x="70" y="60" width="10" height="10" fill="#EBF28C"/>
+<rect x="80" y="60" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="10" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="70" width="10" height="10" fill="#E6A3C2"/>
+<rect x="30" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="40" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="50" y="70" width="10" height="10" fill="#A3D6DB"/>
+<rect x="60" y="70" width="10" height="10" fill="#B3DEA1"/>
+<rect x="70" y="70" width="10" height="10" fill="#B3DEA1"/>
+<rect x="80" y="70" width="10" height="10" fill="#B3DEA1"/>
+<rect x="0" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="10" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="20" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="30" y="80" width="10" height="10" fill="#E6A3C2"/>
+<rect x="40" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="50" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="60" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="70" y="80" width="10" height="10" fill="#A3D6DB"/>
+<rect x="80" y="80" width="10" height="10" fill="#A3D6DB"/>
+<path d="M10 0v10M0 10h10M20 0v10M10 10h10M30 10h10M50 0v10M40 10h10M60 0v10M70 0v10M80 0v10M70 10h10M80 10h10M10 10v10M0 20h10M30 10v10M20 20h10M30 20h10M60 10v10M60 20h10M80 10v10M80 20h10M20 20v10M30 20v10M40 20v10M30 30h10M50 20v10M70 20v10M70 30h10M80 30h10M10 30v10M0 40h10M20 30v10M10 40h10M20 40h10M40 40h10M60 30v10M50 40h10M60 40h10M70 40h10M10 40v10M0 50h10M20 40v10M10 50h10M20 50h10M40 40v10M30 50h10M40 50h10M60 40v10M50 50h10M60 50h10M80 40v10M80 50h10M10 50v10M0 60h10M20 50v10M40 50v10M40 60h10M60 50v10M70 50v10M70 60h10M80 60h10M20 60v10M10 70h10M20 70h10M30 70h10M50 60v10M60 60v10M80 70h10M10 70v10M0 80h10M20 70v10M10 80h10M20 80h10M40 70v10M50 70v10M40 80h10M50 80h10M70 70v10M80 70v10M10 80v10M20 80v10M30 80v10M50 80v10M60 80v10M70 80v10M80 80v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M30 0v10M20 10h10M40 0v10M50 10h10M60 10h10M20 10v10M10 20h10M40 10v10M50 10v10M40 20h10M50 20h10M70 10v10M70 20h10M10 20v10M0 30h10M10 30h10M20 30h10M40 30h10M60 20v10M50 30h10M60 30h10M80 20v10M30 30v10M40 30v10M30 40h10M50 30v10M70 30v10M80 30v10M80 40h10M30 40v10M50 40v10M70 40v10M70 50h10M10 60h10M30 50v10M20 60h10M30 60h10M50 50v10M50 60h10M60 60h10M80 50v10M10 60v10M0 70h10M30 60v10M40 60v10M40 70h10M50 70h10M70 60v10M60 70h10M80 60v10M70 70h10M30 70v10M30 80h10M60 70v10M60 80h10M70 80h10M80 80h10M40 80v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<rect x="0" y="0" width="90" height="90" fill="none" stroke="#1d1c1a" stroke-width="1.2" rx="0.8"/>
+<rect x="60.6" y="30.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<rect x="50.6" y="40.6" width="8.8" height="8.8" rx="1.2" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="0.8"/>
+<circle cx="15.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="15.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="25.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="35.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="35.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="45.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<use href="#star" x="71.60" y="51.60" width="6.80" height="6.80" fill="#1d1c1a"/>
+<circle cx="85.0" cy="55.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<use href="#star" x="51.60" y="61.60" width="6.80" height="6.80" fill="#1d1c1a"/>
+<circle cx="65.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="65.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="25.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="45.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="55.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="65.0" cy="75.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="5.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="75.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="85.0" cy="85.0" r="1.15" fill="#1d1c1a" fill-opacity="0.6"/>
+<use href="#star" x="51.20" y="1.20" width="7.60" height="7.60" fill="none" stroke="var(--accent)" stroke-width="1.6"/>
+<use href="#star" x="61.20" y="31.20" width="7.60" height="7.60" fill="none" stroke="var(--accent)" stroke-width="1.6"/>
+</svg>
+      <figcaption>9×9, 2 stars. Suppose a star on the hollow star at the top; the dots it forces leave the highlighted unit one free cell, so a second hollow star is forced there, and now a row, column or region can no longer hold the stars it needs. The supposition fails: the first cell is out.</figcaption>
+      </figure>
+      <p class="hint"><strong>In the hint ladder:</strong> “A queen or star here would lead to a contradiction, so the cell is out.” The mirror image exists too: “Leaving this cell empty would lead to a contradiction, so it must hold a queen or star.”</p>
+      <h2 id="shapes">Common two-star shapes</h2>
+      <p>Each drawing is a region that needs two stars (one for the 2×2 block), whatever the rest of the board does. A star marks a cell every placement uses; a dot marks a cell no placement uses. The apps show the same sheet under Learn; every card is checked by enumerating the placements, so a drawing never says more than the placements do.</p>
+      <ul class="shapes">
+      <li class="card shape-card">
+      <svg class="shape" viewBox="-0.6 -0.6 31.2 11.2" role="img" aria-label="A line of three: stars on the cells every placement uses, dots on the cells none uses">
+<title>A line of three: stars on the cells every placement uses, dots on the cells none uses</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="0" width="10" height="10" fill="#BAA3E3"/>
+<path d="M10 0v10M20 0v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M10 0h10M10 10h10M20 0h10M20 10h10M30 0v10M0 0h10M0 10h10M0 0v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<use href="#star" x="1.40" y="1.40" width="7.20" height="7.20" fill="#1d1c1a"/>
+<use href="#star" x="21.40" y="1.40" width="7.20" height="7.20" fill="#1d1c1a"/>
+<circle cx="15.0" cy="5.0" r="1.3" fill="#1d1c1a" fill-opacity="0.6"/>
+</svg>
+      <div><h3>A line of three</h3><p>Three cells in a row with two stars: the ends are the stars, since the middle touches both.</p></div></li>
+      <li class="card shape-card">
+      <svg class="shape" viewBox="-0.6 -0.6 21.2 21.2" role="img" aria-label="The 2×2 block: stars on the cells every placement uses, dots on the cells none uses">
+<title>The 2×2 block: stars on the cells every placement uses, dots on the cells none uses</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="#BAA3E3"/>
+<path d="M10 0v10M0 10h10M10 10h10M10 10v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M10 0h10M20 0v10M0 20h10M0 10v10M10 20h10M20 10v10M0 0h10M0 0v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+</svg>
+      <div><h3>The 2×2 block</h3><p>Any 2×2 block holds one star at most: two inside it would touch. A region that needs two stars must offer two 2×2 blocks apart.</p></div></li>
+      <li class="card shape-card">
+      <svg class="shape" viewBox="-0.6 -0.6 31.2 21.2" role="img" aria-label="The 2×3 rectangle: stars on the cells every placement uses, dots on the cells none uses">
+<title>The 2×3 rectangle: stars on the cells every placement uses, dots on the cells none uses</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="10" width="10" height="10" fill="#BAA3E3"/>
+<path d="M10 0v10M0 10h10M20 0v10M10 10h10M20 10h10M10 10v10M20 10v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M10 0h10M20 20h10M30 10v10M0 0h10M0 0v10M10 20h10M20 0h10M30 0v10M0 20h10M0 10v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<circle cx="15.0" cy="5.0" r="1.3" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="15.0" r="1.3" fill="#1d1c1a" fill-opacity="0.6"/>
+</svg>
+      <div><h3>The 2×3 rectangle</h3><p>Two stars two columns apart at least: the middle column is out, one star in each end column.</p></div></li>
+      <li class="card shape-card">
+      <svg class="shape" viewBox="-0.6 -0.6 31.2 31.2" role="img" aria-label="The 3×3 square: stars on the cells every placement uses, dots on the cells none uses">
+<title>The 3×3 square: stars on the cells every placement uses, dots on the cells none uses</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="0" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="20" width="10" height="10" fill="#BAA3E3"/>
+<path d="M10 0v10M0 10h10M20 0v10M10 10h10M20 10h10M10 10v10M0 20h10M20 10v10M10 20h10M20 20h10M10 20v10M20 20v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M10 0h10M30 10v10M10 30h10M0 0h10M0 0v10M0 30h10M0 20v10M20 0h10M30 0v10M20 30h10M30 20v10M0 10v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<circle cx="15.0" cy="15.0" r="1.3" fill="#1d1c1a" fill-opacity="0.6"/>
+</svg>
+      <div><h3>The 3×3 square</h3><p>The centre touches every other cell, so it is out; the two stars sit on the rim.</p></div></li>
+      <li class="card shape-card">
+      <svg class="shape" viewBox="-0.6 -0.6 21.2 31.2" role="img" aria-label="The L of four: stars on the cells every placement uses, dots on the cells none uses">
+<title>The L of four: stars on the cells every placement uses, dots on the cells none uses</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="var(--surface)" stroke="#1d1c1a" stroke-opacity="0.18" stroke-width="0.35"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="var(--surface)" stroke="#1d1c1a" stroke-opacity="0.18" stroke-width="0.35"/>
+<rect x="0" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="20" width="10" height="10" fill="#BAA3E3"/>
+<path d="M0 10h10M0 20h10M10 20v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M10 0v10M10 10v10M10 20h10M0 10v10M0 30h10M0 20v10M10 30h10M20 20v10M0 0h10M0 0v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<use href="#star" x="1.40" y="1.40" width="7.20" height="7.20" fill="#1d1c1a"/>
+<circle cx="5.0" cy="15.0" r="1.3" fill="#1d1c1a" fill-opacity="0.6"/>
+</svg>
+      <div><h3>The L of four</h3><p>The far end of the long arm is a star, and the cell next to it is out: the second star must be in the foot.</p></div></li>
+      <li class="card shape-card">
+      <svg class="shape" viewBox="-0.6 -0.6 31.2 21.2" role="img" aria-label="The S of four: stars on the cells every placement uses, dots on the cells none uses">
+<title>The S of four: stars on the cells every placement uses, dots on the cells none uses</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="0" width="10" height="10" fill="var(--surface)" stroke="#1d1c1a" stroke-opacity="0.18" stroke-width="0.35"/>
+<rect x="0" y="10" width="10" height="10" fill="var(--surface)" stroke="#1d1c1a" stroke-opacity="0.18" stroke-width="0.35"/>
+<rect x="10" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="10" width="10" height="10" fill="#BAA3E3"/>
+<path d="M10 0v10M10 10h10M20 10v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M0 10h10M20 0v10M20 10h10M10 10v10M10 0h10M10 20h10M20 20h10M30 10v10M0 0h10M0 0v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<use href="#star" x="1.40" y="1.40" width="7.20" height="7.20" fill="#1d1c1a"/>
+<use href="#star" x="21.40" y="11.40" width="7.20" height="7.20" fill="#1d1c1a"/>
+<circle cx="15.0" cy="5.0" r="1.3" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="15.0" r="1.3" fill="#1d1c1a" fill-opacity="0.6"/>
+</svg>
+      <div><h3>The S of four</h3><p>Only the two ends are far enough apart: both are stars, the two middle cells are out.</p></div></li>
+      <li class="card shape-card">
+      <svg class="shape" viewBox="-0.6 -0.6 31.2 31.2" role="img" aria-label="The T of five: stars on the cells every placement uses, dots on the cells none uses">
+<title>The T of five: stars on the cells every placement uses, dots on the cells none uses</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="0" y="10" width="10" height="10" fill="var(--surface)" stroke="#1d1c1a" stroke-opacity="0.18" stroke-width="0.35"/>
+<rect x="10" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="10" width="10" height="10" fill="var(--surface)" stroke="#1d1c1a" stroke-opacity="0.18" stroke-width="0.35"/>
+<rect x="0" y="20" width="10" height="10" fill="var(--surface)" stroke="#1d1c1a" stroke-opacity="0.18" stroke-width="0.35"/>
+<rect x="10" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="20" width="10" height="10" fill="var(--surface)" stroke="#1d1c1a" stroke-opacity="0.18" stroke-width="0.35"/>
+<path d="M10 0v10M20 0v10M10 10h10M10 20h10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M0 10h10M20 10h10M10 10v10M20 10v10M10 20v10M20 20v10M10 0h10M10 30h10M0 0h10M0 0v10M20 0h10M30 0v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<circle cx="15.0" cy="15.0" r="1.3" fill="#1d1c1a" fill-opacity="0.6"/>
+</svg>
+      <div><h3>The T of five</h3><p>The top of the stem touches every other cell, so it is out. The bar’s centre stays possible: it is two rows above the stem’s foot.</p></div></li>
+      <li class="card shape-card">
+      <svg class="shape" viewBox="-0.6 -0.6 31.2 31.2" role="img" aria-label="The plus: stars on the cells every placement uses, dots on the cells none uses">
+<title>The plus: stars on the cells every placement uses, dots on the cells none uses</title>
+<rect x="0" y="0" width="10" height="10" fill="var(--surface)" stroke="#1d1c1a" stroke-opacity="0.18" stroke-width="0.35"/>
+<rect x="10" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="0" width="10" height="10" fill="var(--surface)" stroke="#1d1c1a" stroke-opacity="0.18" stroke-width="0.35"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="0" y="20" width="10" height="10" fill="var(--surface)" stroke="#1d1c1a" stroke-opacity="0.18" stroke-width="0.35"/>
+<rect x="10" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="20" width="10" height="10" fill="var(--surface)" stroke="#1d1c1a" stroke-opacity="0.18" stroke-width="0.35"/>
+<path d="M10 10h10M10 10v10M20 10v10M10 20h10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M10 0v10M0 10h10M20 0v10M20 10h10M0 20h10M20 20h10M10 20v10M20 20v10M10 0h10M30 10v10M10 30h10M0 10v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<circle cx="15.0" cy="15.0" r="1.3" fill="#1d1c1a" fill-opacity="0.6"/>
+</svg>
+      <div><h3>The plus</h3><p>The centre is out, and the two stars are the two ends of one arm: neighbouring arms touch at the corner.</p></div></li>
+      <li class="card shape-card">
+      <svg class="shape" viewBox="-0.6 -0.6 21.2 31.2" role="img" aria-label="The P of five: stars on the cells every placement uses, dots on the cells none uses">
+<title>The P of five: stars on the cells every placement uses, dots on the cells none uses</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="0" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="20" width="10" height="10" fill="var(--surface)" stroke="#1d1c1a" stroke-opacity="0.18" stroke-width="0.35"/>
+<path d="M10 0v10M0 10h10M10 10h10M10 10v10M0 20h10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M10 20h10M10 20v10M10 0h10M20 0v10M0 0h10M0 0v10M20 10v10M0 30h10M0 20v10M0 10v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<use href="#star" x="1.40" y="21.40" width="7.20" height="7.20" fill="#1d1c1a"/>
+<circle cx="5.0" cy="15.0" r="1.3" fill="#1d1c1a" fill-opacity="0.6"/>
+<circle cx="15.0" cy="15.0" r="1.3" fill="#1d1c1a" fill-opacity="0.6"/>
+</svg>
+      <div><h3>The P of five</h3><p>The tail is a star and the two cells above it are out: the other star is in the top row of the block.</p></div></li>
+      <li class="card shape-card">
+      <svg class="shape" viewBox="-0.6 -0.6 31.2 21.2" role="img" aria-label="The U of five: stars on the cells every placement uses, dots on the cells none uses">
+<title>The U of five: stars on the cells every placement uses, dots on the cells none uses</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="var(--surface)" stroke="#1d1c1a" stroke-opacity="0.18" stroke-width="0.35"/>
+<rect x="20" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="10" width="10" height="10" fill="#BAA3E3"/>
+<path d="M0 10h10M20 10h10M10 10v10M20 10v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M10 0v10M20 0v10M10 10h10M20 20h10M30 10v10M0 0h10M0 0v10M10 20h10M20 0h10M30 0v10M0 20h10M0 10v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<circle cx="15.0" cy="15.0" r="1.3" fill="#1d1c1a" fill-opacity="0.6"/>
+</svg>
+      <div><h3>The U of five</h3><p>The bottom centre touches both arms and the two cells beside it, so it is out; the stars are spread between the arms.</p></div></li>
+      <li class="card shape-card">
+      <svg class="shape" viewBox="-0.6 -0.6 31.2 31.2" role="img" aria-label="The W of five: stars on the cells every placement uses, dots on the cells none uses">
+<title>The W of five: stars on the cells every placement uses, dots on the cells none uses</title>
+<rect x="0" y="0" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="0" width="10" height="10" fill="var(--surface)" stroke="#1d1c1a" stroke-opacity="0.18" stroke-width="0.35"/>
+<rect x="20" y="0" width="10" height="10" fill="var(--surface)" stroke="#1d1c1a" stroke-opacity="0.18" stroke-width="0.35"/>
+<rect x="0" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="10" y="10" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="10" width="10" height="10" fill="var(--surface)" stroke="#1d1c1a" stroke-opacity="0.18" stroke-width="0.35"/>
+<rect x="0" y="20" width="10" height="10" fill="var(--surface)" stroke="#1d1c1a" stroke-opacity="0.18" stroke-width="0.35"/>
+<rect x="10" y="20" width="10" height="10" fill="#BAA3E3"/>
+<rect x="20" y="20" width="10" height="10" fill="#BAA3E3"/>
+<path d="M0 10h10M10 10v10M10 20h10M20 20v10" fill="none" stroke="#1d1c1a" stroke-opacity="0.22" stroke-width="0.35"/>
+<path d="M10 0v10M10 10h10M0 20h10M20 10v10M20 20h10M10 20v10M10 30h10M0 0h10M0 0v10M20 30h10M30 20v10M0 10v10" fill="none" stroke="#1d1c1a" stroke-width="1" stroke-linecap="square"/>
+<circle cx="15.0" cy="15.0" r="1.3" fill="#1d1c1a" fill-opacity="0.6"/>
+</svg>
+      <div><h3>The W of five</h3><p>The middle step touches every other cell, so it is out; the stars are one on each side of it.</p></div></li>
+      </ul>
+      <h2 id="practice">Where to practise</h2>
+      <ul>
+      <li><strong>Learn</strong>, on the app's Home screen: one lesson per idea on this page. Each explains the idea on a real position, has you make the deduction, shows a second board, then offers <em>Practice this idea</em>: fresh positions keyed on that idea, untimed, no lives, a counter of solved positions.</li>
+      <li><strong>Hints</strong>: on any ordinary board, <em>Show me where</em> highlights the unit behind the next step, then the cells, names the idea and offers <em>Learn this</em>, which opens its lesson and comes back to your game.</li>
+      <li><strong>Tactics</strong>: a three-minute rush of positions to read, each cut from a fresh board by the same engine; a miss shows the answer with the idea behind it.</li>
+      </ul>
+      <p class="cta"><a class="btn btn-primary" href="https://apps.apple.com/app/id6808032290">Stelline on the App Store</a> <a class="btn" href="https://play.google.com/store/apps/details?id=studio.andelis.stelline">Stelline on Google Play</a></p>
+      <p class="note">The boards on this page are the lesson boards of Stelline 1.6; the texts are the lessons’ and the hint ladder’s. Last updated 16 October 2026.</p>
+    </main>
+
+    <footer>
+      <nav aria-label="Footer">
+        <a href="../">Home</a>
+        <a href="../techniques/">Techniques</a>
+        <a href="../support/">Support</a>
+        <a href="../privacy/">Privacy policy</a>
+        <a href="../press/">Press kit</a>
+      </nav>
+      <p>This site sets no cookies and loads nothing from third parties.</p>
+      <p>Star Battle is a puzzle genre, created by Hans Eendebak for the 2003 World Puzzle Championship in the Netherlands. Apple, iPhone and App Store are trademarks of Apple Inc. IOS is a trademark or registered trademark of Cisco in the U.S. and other countries and is used under license. Google Play and Android are trademarks of Google LLC.</p>
+      <p>© 2026 Andelis Studio LLC. Stelline is a trademark of Andelis Studio LLC.</p>
+    </footer>
+  </div>
+</body>
+</html>

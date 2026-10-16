@@ -267,6 +267,7 @@
         Stelline
       </a>
       <nav aria-label="Site">
+        <a href="../techniques/">Techniques</a>
         <a href="../support/" aria-current="page">Support</a>
         <a href="../privacy/">Privacy</a>
       </nav>
@@ -292,6 +293,7 @@
           <li><a href="#daily">Is Today's board the same for everyone?</a></li>
           <li><a href="#tactics">What is Tactics?</a></li>
           <li><a href="#learn">What do the lessons under Learn teach?</a></li>
+          <li><a href="#what-if">What are what-if marks?</a></li>
           <li><a href="#accessibility">Does Stelline work with VoiceOver, TalkBack and Dynamic Type?</a></li>
           <li><a href="#requirements">Which phones run Stelline?</a></li>
           <li><a href="#privacy">What does Stelline collect?</a></li>
@@ -360,7 +362,7 @@
       <p>Hints are unlimited and come in stages, so you only get as much help as you ask for: first two counters that say how many queens and dots are misplaced without saying where, then <em>Show me where</em>, which highlights the next logical step (or the mistake) and can apply the fix for you. Every stage counts as a hint.</p>
       <ol>
         <li><strong>Counters.</strong> The first tap shows two numbers: <em>misplaced queens</em> (pieces that are not on a solution cell) and <em>misplaced dots</em> (dots sitting where a queen or star belongs). It never says where. Zero and zero means everything on the board is right so far; anything else means it is time to undo.</li>
-        <li><strong>Show me where.</strong> If something is misplaced, the game highlights the region (or regions) that holds the mistake, then, on the next tap, the exact cells, and finally offers to <em>Clear them</em>. If the board is all correct, it instead highlights the row, column or region behind the next logical step — or the cells themselves when the step spans several units — then shows the cells with a preview of the dots and pieces the step settles, names the technique, and can <em>Do it</em> for you.</li>
+        <li><strong>Show me where.</strong> If something is misplaced, the game highlights the region (or regions) that holds the mistake, then, on the next tap, the exact cells, and finally offers to <em>Clear them</em>. If the board is all correct, it instead highlights the row, column or region behind the next logical step — or the cells themselves when the step spans several units — then shows the cells with a preview of the dots and pieces the step settles, names the technique, and can <em>Do it</em> for you. Since version 1.6, <em>Learn this</em> next to it opens the idea’s lesson and comes back to your game; every idea is also explained on the <a href="../techniques/">techniques page</a>.</li>
         <li><strong>Reveal.</strong> Only when no logical step is available (which is rare, and only on Expert 2 stars boards) the game offers to place one solution queen or star.</li>
       </ol>
       <p>Using a hint means the board will not earn the <em>Flawless</em> badge, which is reserved for solves with no hints and no conflicts.</p>
@@ -419,12 +421,17 @@
       </ul>
 
       <h2 id="learn">What do the lessons under Learn teach?</h2>
-      <p>Learn (version 1.4 on iPhone, version 1.0 on Android) holds lessons you play on a real board, one move at a time, with you making every move.</p>
+      <p>Learn (version 1.4 on iPhone, version 1.0 on Android; the Techniques and Advanced lessons since 1.6 on both) holds lessons you play on a real board, one move at a time, with you making every move.</p>
       <ul>
         <li><strong>First steps</strong> teaches the rules and the controls: tap to cycle a cell, drag to dot a run, undo. It opens by itself the first time the app runs; <em>Skip</em> goes to the Home screen and the lesson waits under Learn.</li>
         <li><strong>Two stars</strong> introduces 2-star mode on a board where two stars share each row, column and region.</li>
+        <li><strong>Techniques</strong>: one lesson per idea of the solver (last cells, nosy neighbours, line locks, two-by-two blocks, exclusion, clumps, container consumption, counting, X-wing, finned count). Each explains the idea on a real position with the cells highlighted, has you make the deduction, then shows the same idea on a second board. <em>Practice this idea</em> at the end serves fresh positions keyed on that idea, untimed and without lives, with a counter of solved positions. The same ideas are explained with example boards on the <a href="../techniques/">techniques page</a>.</li>
+        <li><strong>Advanced</strong>: squeezes, set differences and fish in the same shape, and the what-if step: suppose a queen on the cell shown, place the queen it forces, see the contradiction, then dot the cell on a fresh copy of the board.</li>
         <li><strong>The rules at a glance</strong>, the six-slide summary of the rules and controls, is under Learn as well. A finished lesson shows a check next to its title; you can replay any lesson.</li>
       </ul>
+
+      <h2 id="what-if">What are what-if marks?</h2>
+      <p>A way to try a move you are not sure of (version 1.6 on both platforms, off by default). Switch on <em>What-if marks</em> in Settings; a <em>What if?</em> button then sits above Undo. From that point your marks are drawn hollow in the accent colour, so they read apart from the firm ones. <em>Keep</em> makes them firm; <em>Drop</em> removes them all in one step, and Undo brings a dropped branch back. One branch at a time; Clear empties the whole board, branch included, as one step you can undo.</p>
 
       <h2 id="accessibility">Does Stelline work with VoiceOver, TalkBack and Dynamic Type?</h2>
       <p>Yes. On iPhone, every cell is a VoiceOver element with actions to mark, place and clear, all controls scale with Dynamic Type, Reduce Motion turns off the animations, and haptics can be switched off. On Android, TalkBack reads every cell and the font size and remove-animations settings are respected.</p>
@@ -473,6 +480,7 @@
     <footer>
       <nav aria-label="Footer">
         <a href="../">Home</a>
+        <a href="../techniques/">Techniques</a>
         <a href="../support/">Support</a>
         <a href="../privacy/">Privacy policy</a>
         <a href="../press/">Press kit</a>
